@@ -16,16 +16,48 @@ async function loadTrendingStocks() {
     
     container.innerHTML = '<div class="loading">Loading stocks...</div>';
     
-    const cards = [];
-    for (const symbol of symbols) {
-        const quote = await finnhubAPI.getQuote(symbol);
-        if (quote && quote.c) {
-            cards.push(createStockCard(symbol, quote));
-        }
+    try {
+        const promises = symbols.map(symbol => finnhubAPI.getQuote(symbol));
+        const quotes = await Promise.all(promises);
+        
+        container.innerHTML = '';
+        
+        quotes.forEach((quote, index) => {
+            if (quote && quote.c) {
+                const card = createStockCard(symbols[index], quote);
+                container.appendChild(card);
+            }
+        });
+    } catch (error) {
+        console.error('Error loading trending stocks:', error);
+        container.innerHTML = '<div class="loading">Unable to load stocks</div>';
     }
+}
+
+function createStockCard(symbol, quote) {
+    const card = document.createElement('div');
+    card.className = 'stock-card hover-lift';
     
-    container.innerHTML = '';
-    cards.forEach(card => container.appendChild(card));
+    const isPositive = quote.dp >= 0;
+    const icon = isPositive ? 'fa-chart-line' : 'fa-chart-line';
+    
+    card.innerHTML = `
+        <div class="stock-header">
+            <div>
+                <h3 class="stock-symbol">${symbol}</h3>
+                <p class="stock-name">${symbol}</p>
+            </div>
+            <i class="fas ${icon} ${isPositive ? 'text-success' : 'text-destructive'}"></i>
+        </div>
+        <div>
+            <div class="stock-price">$${quote.c.toFixed(2)}</div>
+            <div class="stock-change ${isPositive ? 'positive' : 'negative'}">
+                ${isPositive ? '+' : ''}${quote.dp.toFixed(2)}%
+            </div>
+        </div>
+    `;
+    
+    return card;
 }
 
 // Sector Performance Chart
