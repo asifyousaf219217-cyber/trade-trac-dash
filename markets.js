@@ -57,7 +57,10 @@ async function loadStockChart() {
     const from = to - 24 * 60 * 60; // Last 24 hours
     
     const data = await finnhubAPI.getCandles(selectedStock, '5', from, to);
-    if (!data || !data.c || data.s === 'no_data') return;
+    if (!data || !data.c || data.s === 'no_data') {
+        console.log('No chart data available');
+        return;
+    }
 
     const chartData = {
         labels: data.t.slice(-20).map(t => {
@@ -69,13 +72,14 @@ async function loadStockChart() {
             data: data.c.slice(-20),
             borderColor: data.c[data.c.length - 1] > data.c[0] ? '#22c55e' : '#ef4444',
             backgroundColor: 'transparent',
-            borderWidth: 3,
+            borderWidth: 2,
             tension: 0.4,
             pointRadius: 0
         }]
     };
 
-    const ctx = document.getElementById('stockChart').getContext('2d');
+    const ctx = document.getElementById('stockChart');
+    if (!ctx) return;
     
     if (stockChart) {
         stockChart.destroy();
@@ -87,6 +91,9 @@ async function loadStockChart() {
         options: {
             responsive: true,
             maintainAspectRatio: true,
+            animation: {
+                duration: 750
+            },
             plugins: {
                 legend: { display: false }
             },
@@ -116,14 +123,20 @@ async function loadPopularStocks() {
     
     container.innerHTML = '<div class="loading">Loading stocks...</div>';
     
-    const cards = [];
-    for (const symbol of symbols) {
-        const quote = await finnhubAPI.getQuote(symbol);
-        if (quote && quote.c) {
-            cards.push(createStockCard(symbol, quote));
-        }
+    try {
+        const promises = symbols.map(symbol => finnhubAPI.getQuote(symbol));
+        const quotes = await Promise.all(promises);
+        
+        container.innerHTML = '';
+        
+        quotes.forEach((quote, index) => {
+            if (quote && quote.c) {
+                const card = createStockCard(symbols[index], quote);
+                container.appendChild(card);
+            }
+        });
+    } catch (error) {
+        console.error('Error loading popular stocks:', error);
+        container.innerHTML = '<div class="loading">Unable to load stocks</div>';
     }
-    
-    container.innerHTML = '';
-    cards.forEach(card => container.appendChild(card));
 }

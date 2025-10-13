@@ -31,10 +31,16 @@ function initTabs() {
 
 // Load News
 async function loadNews() {
-    loadGlobalNews();
-    loadCryptoNews();
-    loadBusinessNews();
-    loadUAENews();
+    try {
+        await Promise.all([
+            loadGlobalNews(),
+            loadCryptoNews(),
+            loadBusinessNews(),
+            loadUAENews()
+        ]);
+    } catch (error) {
+        console.error('Error loading news:', error);
+    }
 }
 
 async function loadGlobalNews() {

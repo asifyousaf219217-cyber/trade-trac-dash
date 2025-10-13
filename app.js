@@ -1,7 +1,15 @@
 // Theme Management
 function initTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    const html = document.documentElement;
+    
+    if (savedTheme === 'dark') {
+        html.classList.add('dark');
+        html.style.colorScheme = 'dark';
+    } else {
+        html.classList.remove('dark');
+        html.style.colorScheme = 'light';
+    }
     
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
@@ -11,8 +19,18 @@ function initTheme() {
 }
 
 function toggleTheme() {
-    const isDark = document.documentElement.classList.toggle('dark');
-    const newTheme = isDark ? 'dark' : 'light';
+    const html = document.documentElement;
+    const isDark = html.classList.contains('dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    
+    if (newTheme === 'dark') {
+        html.classList.add('dark');
+        html.style.colorScheme = 'dark';
+    } else {
+        html.classList.remove('dark');
+        html.style.colorScheme = 'light';
+    }
+    
     localStorage.setItem('theme', newTheme);
     updateThemeIcon(newTheme);
 }
@@ -21,7 +39,9 @@ function updateThemeIcon(theme) {
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
         const icon = themeToggle.querySelector('i');
-        icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        if (icon) {
+            icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        }
     }
 }
 
@@ -61,14 +81,23 @@ async function loadTopStocks() {
 
     const symbols = ['AAPL', 'TSLA', 'AMZN'];
     
-    container.innerHTML = '';
+    container.innerHTML = '<div class="loading">Loading stocks...</div>';
     
-    for (const symbol of symbols) {
-        const quote = await finnhubAPI.getQuote(symbol);
-        if (quote && quote.c) {
-            const card = createStockCard(symbol, quote);
-            container.appendChild(card);
-        }
+    try {
+        const promises = symbols.map(symbol => finnhubAPI.getQuote(symbol));
+        const quotes = await Promise.all(promises);
+        
+        container.innerHTML = '';
+        
+        quotes.forEach((quote, index) => {
+            if (quote && quote.c) {
+                const card = createStockCard(symbols[index], quote);
+                container.appendChild(card);
+            }
+        });
+    } catch (error) {
+        console.error('Error loading stocks:', error);
+        container.innerHTML = '<div class="loading">Unable to load stocks</div>';
     }
 }
 
