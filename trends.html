@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trends - StockPulse</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">StockPulse</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="markets.html" class="nav-link">Markets</a>
+                <a href="currencies.html" class="nav-link">Currencies</a>
+                <a href="trends.html" class="nav-link active">Trends</a>
+                <a href="news.html" class="nav-link">News</a>
+                <a href="about.html" class="nav-link">About</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ticker -->
+    <div class="ticker">
+        <div class="ticker-content" id="tickerContent"></div>
+    </div>
+
+    <div class="container page-container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-fire text-warning"></i>
+                Market Trends
+            </h1>
+            <p class="page-subtitle">What's hot in the market right now</p>
+        </div>
+
+        <!-- Market Insights -->
+        <div class="grid grid-3">
+            <div class="insight-card">
+                <span class="badge">Hot</span>
+                <h3>Tech Rally Continues</h3>
+                <p>Technology sector leads market gains with AI stocks surging</p>
+            </div>
+            <div class="insight-card">
+                <span class="badge">News</span>
+                <h3>Fed Rate Decision</h3>
+                <p>Markets anticipate Federal Reserve interest rate announcement</p>
+            </div>
+            <div class="insight-card">
+                <span class="badge">Trending</span>
+                <h3>Green Energy Boom</h3>
+                <p>Renewable energy stocks see increased investor interest</p>
+            </div>
+        </div>
+
+        <!-- Trending Stocks -->
+        <div class="mt-4">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line text-success"></i>
+                Trending Stocks
+            </h2>
+            <div class="grid grid-5" id="trendingStocks">
+                <!-- Stocks will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Sector Performance Chart -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">Sector Performance</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="sectorChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Cryptocurrency Prices -->
+        <div class="mt-4">
+            <h2 class="section-title">Cryptocurrency Prices</h2>
+            <div class="grid grid-3" id="cryptoGrid">
+                <div class="crypto-card">
+                    <div class="crypto-header">
+                        <div class="crypto-icon">₿</div>
+                        <div>
+                            <h3>Bitcoin</h3>
+                            <p class="crypto-symbol">BTC</p>
+                        </div>
+                        <i class="fas fa-chart-line text-success"></i>
+                    </div>
+                    <div class="crypto-price">$43,250</div>
+                    <div class="crypto-change positive">+2.4%</div>
+                </div>
+                <div class="crypto-card">
+                    <div class="crypto-header">
+                        <div class="crypto-icon">Ξ</div>
+                        <div>
+                            <h3>Ethereum</h3>
+                            <p class="crypto-symbol">ETH</p>
+                        </div>
+                        <i class="fas fa-chart-line text-success"></i>
+                    </div>
+                    <div class="crypto-price">$2,280</div>
+                    <div class="crypto-change positive">+1.8%</div>
+                </div>
+                <div class="crypto-card">
+                    <div class="crypto-header">
+                        <div class="crypto-icon">Ð</div>
+                        <div>
+                            <h3>Dogecoin</h3>
+                            <p class="crypto-symbol">DOGE</p>
+                        </div>
+                        <i class="fas fa-chart-line text-destructive"></i>
+                    </div>
+                    <div class="crypto-price">$0.082</div>
+                    <div class="crypto-change negative">-0.5%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+    <script src="trends.js"></script>
+</body>
+</html>

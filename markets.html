@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markets - StockPulse</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">StockPulse</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="markets.html" class="nav-link active">Markets</a>
+                <a href="currencies.html" class="nav-link">Currencies</a>
+                <a href="trends.html" class="nav-link">Trends</a>
+                <a href="news.html" class="nav-link">News</a>
+                <a href="about.html" class="nav-link">About</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ticker -->
+    <div class="ticker">
+        <div class="ticker-content" id="tickerContent"></div>
+    </div>
+
+    <div class="container page-container">
+        <div class="page-header">
+            <h1 class="page-title">Stock Markets</h1>
+            <p class="page-subtitle">Real-time market data and analysis</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="search" placeholder="Search stocks by name or symbol (e.g., AAPL, Tesla)..." id="stockSearch">
+        </div>
+
+        <!-- Stock Selector -->
+        <div class="stock-selector" id="stockSelector">
+            <button class="stock-btn active" data-symbol="AAPL">AAPL</button>
+            <button class="stock-btn" data-symbol="TSLA">TSLA</button>
+            <button class="stock-btn" data-symbol="NVDA">NVDA</button>
+            <button class="stock-btn" data-symbol="MSFT">MSFT</button>
+            <button class="stock-btn" data-symbol="GOOGL">GOOGL</button>
+            <button class="stock-btn" data-symbol="META">META</button>
+            <button class="stock-btn" data-symbol="AMZN">AMZN</button>
+            <button class="stock-btn" data-symbol="AMD">AMD</button>
+        </div>
+
+        <!-- Featured Stock Chart -->
+        <div class="card">
+            <div class="card-header">
+                <div id="stockInfo">
+                    <div class="stock-title">
+                        <span class="stock-symbol">AAPL</span>
+                        <span class="stock-name">Loading...</span>
+                    </div>
+                    <div class="stock-price-info">
+                        <div class="stock-price" id="currentPrice">$0.00</div>
+                        <div class="stock-change" id="priceChange">+0.00%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Sector Performance -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">Sector Performance</h3>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-6" id="sectors">
+                    <div class="sector-card">
+                        <p class="sector-name">Technology</p>
+                        <p class="sector-change positive">+2.8%</p>
+                    </div>
+                    <div class="sector-card">
+                        <p class="sector-name">Healthcare</p>
+                        <p class="sector-change positive">+1.4%</p>
+                    </div>
+                    <div class="sector-card">
+                        <p class="sector-name">Finance</p>
+                        <p class="sector-change positive">+0.9%</p>
+                    </div>
+                    <div class="sector-card">
+                        <p class="sector-name">Energy</p>
+                        <p class="sector-change negative">-1.2%</p>
+                    </div>
+                    <div class="sector-card">
+                        <p class="sector-name">Consumer</p>
+                        <p class="sector-change positive">+0.5%</p>
+                    </div>
+                    <div class="sector-card">
+                        <p class="sector-name">Industrial</p>
+                        <p class="sector-change negative">-0.3%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Stocks -->
+        <div class="mt-4">
+            <h2 class="section-title">Popular Stocks</h2>
+            <div class="grid grid-4" id="popularStocks">
+                <!-- Stocks will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+    <script src="markets.js"></script>
+</body>
+</html>
