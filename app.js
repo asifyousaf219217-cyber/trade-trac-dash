@@ -45,33 +45,45 @@ function updateThemeIcon(theme) {
     }
 }
 
-// Ticker Animation
-function initTicker() {
+// Ticker Animation with Real Data
+async function initTicker() {
     const tickerContent = document.getElementById('tickerContent');
     if (!tickerContent) return;
 
-    const tickerData = [
-        { symbol: 'AAPL', change: 2.4, positive: true },
-        { symbol: 'TSLA', change: -1.3, positive: false },
-        { symbol: 'BTC', change: 0.7, positive: true },
-        { symbol: 'GOOGL', change: 1.8, positive: true },
-        { symbol: 'AMZN', change: -0.5, positive: false },
-        { symbol: 'MSFT', change: 1.2, positive: true },
-        { symbol: 'META', change: 3.1, positive: true },
-        { symbol: 'NVDA', change: 2.9, positive: true }
-    ];
-
-    // Duplicate data for seamless loop
-    const duplicatedData = [...tickerData, ...tickerData];
+    const symbols = ['AAPL', 'TSLA', 'GOOGL', 'AMZN', 'MSFT', 'META', 'NVDA', 'AMD'];
     
-    tickerContent.innerHTML = duplicatedData.map(stock => `
-        <div class="ticker-item">
-            <span class="ticker-symbol">${stock.symbol}</span>
-            <span class="ticker-change ${stock.positive ? 'positive' : 'negative'}">
-                ${stock.positive ? '+' : ''}${stock.change}%
-            </span>
-        </div>
-    `).join('');
+    tickerContent.innerHTML = '<div class="ticker-item">Loading...</div>';
+    
+    try {
+        const promises = symbols.map(symbol => finnhubAPI.getQuote(symbol));
+        const quotes = await Promise.all(promises);
+        
+        const tickerData = quotes.map((quote, index) => {
+            if (quote && quote.c && quote.dp !== undefined) {
+                return {
+                    symbol: symbols[index],
+                    change: quote.dp,
+                    positive: quote.dp >= 0
+                };
+            }
+            return null;
+        }).filter(item => item !== null);
+
+        // Duplicate data for seamless loop
+        const duplicatedData = [...tickerData, ...tickerData];
+        
+        tickerContent.innerHTML = duplicatedData.map(stock => `
+            <div class="ticker-item">
+                <span class="ticker-symbol">${stock.symbol}</span>
+                <span class="ticker-change ${stock.positive ? 'positive' : 'negative'}">
+                    ${stock.positive ? '+' : ''}${stock.change.toFixed(2)}%
+                </span>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading ticker:', error);
+        tickerContent.innerHTML = '<div class="ticker-item">Unable to load market data</div>';
+    }
 }
 
 // Load Stock Cards on Home Page
