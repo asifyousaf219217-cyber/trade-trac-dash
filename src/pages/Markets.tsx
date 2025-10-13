@@ -1,46 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Search, TrendingUp, TrendingDown } from "lucide-react";
 import StockCard from "@/components/StockCard";
+import { useStockQuote, useStockCandles } from "@/hooks/useStockQuote";
+import { toast } from "sonner";
 
 const Markets = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStock, setSelectedStock] = useState("AAPL");
 
-  const stocks = {
-    gainers: [
-      { symbol: "NVDA", name: "NVIDIA Corp", price: 495.30, change: 5.2, volume: "125M" },
-      { symbol: "META", name: "Meta Platforms", price: 352.80, change: 3.1, volume: "85M" },
-      { symbol: "AAPL", name: "Apple Inc.", price: 178.45, change: 2.3, volume: "52M" },
-      { symbol: "GOOGL", name: "Alphabet Inc.", price: 142.60, change: 1.8, volume: "45M" },
-    ],
-    losers: [
-      { symbol: "TSLA", name: "Tesla Inc.", price: 242.80, change: -2.4, volume: "98M" },
-      { symbol: "NFLX", name: "Netflix Inc.", price: 485.20, change: -1.9, volume: "38M" },
-      { symbol: "AMZN", name: "Amazon.com", price: 148.92, change: -0.8, volume: "45M" },
-      { symbol: "AMD", name: "AMD Inc.", price: 165.40, change: -0.5, volume: "72M" },
-    ],
-    active: [
-      { symbol: "TSLA", name: "Tesla Inc.", price: 242.80, change: -2.4, volume: "198M" },
-      { symbol: "NVDA", name: "NVIDIA Corp", price: 495.30, change: 5.2, volume: "175M" },
-      { symbol: "AAPL", name: "Apple Inc.", price: 178.45, change: 2.3, volume: "152M" },
-      { symbol: "AMD", name: "AMD Inc.", price: 165.40, change: -0.5, volume: "142M" },
-    ],
-  };
+  // Fetch real-time data for featured stock
+  const { data: featuredQuote, isLoading: isLoadingQuote } = useStockQuote(selectedStock);
+  const { data: candleData, isLoading: isLoadingCandles } = useStockCandles(selectedStock, "5");
 
-  const chartData = [
-    { time: "9:30", price: 172 },
-    { time: "10:00", price: 174 },
-    { time: "10:30", price: 173 },
-    { time: "11:00", price: 176 },
-    { time: "11:30", price: 175 },
-    { time: "12:00", price: 178 },
-    { time: "12:30", price: 177 },
-    { time: "1:00", price: 179 },
-  ];
+  // Popular stocks to track
+  const popularStocks = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "META", "AMZN", "AMD"];
+
+  // Transform candle data for chart
+  const chartData = candleData?.c && candleData?.t
+    ? candleData.c.slice(-20).map((price, index) => ({
+        time: new Date(candleData.t[index] * 1000).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        price: price,
+      }))
+    : [];
 
   const sectors = [
     { name: "Technology", change: 2.8, positive: true },
@@ -70,45 +60,89 @@ const Markets = () => {
         />
       </div>
 
+      {/* Stock Selector */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {popularStocks.map((stock) => (
+          <Button
+            key={stock}
+            variant={selectedStock === stock ? "default" : "outline"}
+            onClick={() => setSelectedStock(stock)}
+          >
+            {stock}
+          </Button>
+        ))}
+      </div>
+
       {/* Featured Stock Chart */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <div>
-              <span className="text-3xl font-bold">AAPL</span>
-              <span className="text-muted-foreground ml-3">Apple Inc.</span>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold">$178.45</div>
-              <div className="text-success flex items-center justify-end">
-                <TrendingUp className="h-5 w-5 mr-1" />
-                +2.3%
+            {isLoadingQuote ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-4 w-48" />
               </div>
-            </div>
+            ) : featuredQuote ? (
+              <>
+                <div>
+                  <span className="text-3xl font-bold">{selectedStock}</span>
+                  <span className="text-muted-foreground ml-3">Live Quote</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold">${featuredQuote.c.toFixed(2)}</div>
+                  <div
+                    className={`flex items-center justify-end ${
+                      featuredQuote.dp >= 0 ? "text-success" : "text-destructive"
+                    }`}
+                  >
+                    {featuredQuote.dp >= 0 ? (
+                      <TrendingUp className="h-5 w-5 mr-1" />
+                    ) : (
+                      <TrendingDown className="h-5 w-5 mr-1" />
+                    )}
+                    {featuredQuote.dp >= 0 ? "+" : ""}
+                    {featuredQuote.dp.toFixed(2)}%
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div>No data available</div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" />
-              <YAxis stroke="hsl(var(--muted-foreground))" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="price"
-                stroke="hsl(var(--primary))"
-                strokeWidth={3}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {isLoadingCandles ? (
+            <Skeleton className="h-[300px] w-full" />
+          ) : chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))" 
+                  domain={['auto', 'auto']}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="price"
+                  stroke={featuredQuote?.dp && featuredQuote.dp >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))"}
+                  strokeWidth={3}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              No chart data available
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -144,39 +178,54 @@ const Markets = () => {
         </CardContent>
       </Card>
 
-      {/* Stock Lists */}
-      <Tabs defaultValue="gainers" className="space-y-6">
-        <TabsList className="grid w-full md:w-auto grid-cols-3">
-          <TabsTrigger value="gainers">Top Gainers</TabsTrigger>
-          <TabsTrigger value="losers">Top Losers</TabsTrigger>
-          <TabsTrigger value="active">Most Active</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="gainers">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stocks.gainers.map((stock) => (
-              <StockCard key={stock.symbol} {...stock} />
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="losers">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stocks.losers.map((stock) => (
-              <StockCard key={stock.symbol} {...stock} />
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="active">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stocks.active.map((stock) => (
-              <StockCard key={stock.symbol} {...stock} />
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+      {/* Popular Stocks Grid */}
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Popular Stocks</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {popularStocks.map((symbol) => (
+            <RealTimeStockCard key={symbol} symbol={symbol} />
+          ))}
+        </div>
+      </div>
     </div>
+  );
+};
+
+// Real-time stock card component
+const RealTimeStockCard = ({ symbol }: { symbol: string }) => {
+  const { data: quote, isLoading } = useStockQuote(symbol);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <Skeleton className="h-6 w-20 mb-2" />
+          <Skeleton className="h-4 w-32 mb-4" />
+          <Skeleton className="h-8 w-24 mb-2" />
+          <Skeleton className="h-4 w-16" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!quote) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground">No data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <StockCard
+      symbol={symbol}
+      name={symbol}
+      price={quote.c}
+      change={quote.dp}
+      volume={`${(quote.c * 1000000).toLocaleString()}`}
+    />
   );
 };
 
