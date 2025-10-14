@@ -1,7 +1,7 @@
 // API Configuration
-const FINNHUB_API_KEY = 'd3j47thr01qvmiig7r30d3j47thr01qvmiig7r3g';
+const FINNHUB_API_KEY = 'd3n7u21r01qk65165l6gd3n7u21r01qk65165l70';
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
-const NEWSAPI_KEY = '0d4bfc05d7404c6ebe8ed1f3d1dd22b0';
+const NEWSAPI_KEY = 'a6542220e1e74e548cd3c1b7bf0a9762';
 const NEWSAPI_BASE_URL = 'https://newsapi.org/v2';
 
 // Finnhub API
