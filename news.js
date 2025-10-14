@@ -1,3 +1,5 @@
+import { newsAPI, getTimeAgo } from './api.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.location.pathname.includes('news.html')) return;
     

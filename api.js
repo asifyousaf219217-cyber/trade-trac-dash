@@ -4,8 +4,11 @@ const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 const NEWSAPI_KEY = 'a6542220e1e74e548cd3c1b7bf0a9762';
 const NEWSAPI_BASE_URL = 'https://newsapi.org/v2';
 
+// Export for use in other modules
+export { FINNHUB_API_KEY, FINNHUB_BASE_URL, NEWSAPI_KEY, NEWSAPI_BASE_URL };
+
 // Finnhub API
-const finnhubAPI = {
+export const finnhubAPI = {
     async getQuote(symbol) {
         try {
             const response = await fetch(
@@ -47,7 +50,7 @@ const finnhubAPI = {
 };
 
 // News API
-const newsAPI = {
+export const newsAPI = {
     async getEverything(query, pageSize = 12, language = 'en') {
         try {
             const response = await fetch(
@@ -90,7 +93,7 @@ const newsAPI = {
 };
 
 // Utility Functions
-function formatNumber(num) {
+export function formatNumber(num) {
     if (num >= 1000000) {
         return (num / 1000000).toFixed(1) + 'M';
     }
@@ -100,7 +103,7 @@ function formatNumber(num) {
     return num.toString();
 }
 
-function getTimeAgo(dateString) {
+export function getTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);

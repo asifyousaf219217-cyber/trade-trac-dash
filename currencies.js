@@ -1,3 +1,5 @@
+import Chart from 'chart.js/auto';
+
 let currencyChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {

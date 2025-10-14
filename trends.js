@@ -1,3 +1,6 @@
+import { finnhubAPI } from './api.js';
+import Chart from 'chart.js/auto';
+
 let sectorChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {

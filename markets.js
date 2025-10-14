@@ -1,3 +1,6 @@
+import { finnhubAPI } from './api.js';
+import Chart from 'chart.js/auto';
+
 let selectedStock = 'AAPL';
 let stockChart = null;
 
@@ -139,4 +142,30 @@ async function loadPopularStocks() {
         console.error('Error loading popular stocks:', error);
         container.innerHTML = '<div class="loading">Unable to load stocks</div>';
     }
+}
+
+function createStockCard(symbol, quote) {
+    const card = document.createElement('div');
+    card.className = 'stock-card hover-lift';
+    
+    const isPositive = quote.dp >= 0;
+    const icon = isPositive ? 'fa-chart-line' : 'fa-chart-line';
+    
+    card.innerHTML = `
+        <div class="stock-header">
+            <div>
+                <h3 class="stock-symbol">${symbol}</h3>
+                <p class="stock-name">${symbol}</p>
+            </div>
+            <i class="fas ${icon} ${isPositive ? 'text-success' : 'text-destructive'}"></i>
+        </div>
+        <div>
+            <div class="stock-price">$${quote.c.toFixed(2)}</div>
+            <div class="stock-change ${isPositive ? 'positive' : 'negative'}">
+                ${isPositive ? '+' : ''}${quote.dp.toFixed(2)}%
+            </div>
+        </div>
+    `;
+    
+    return card;
 }
