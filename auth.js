@@ -46,25 +46,67 @@ async function handleAuth(e) {
 
     try {
         if (isSignUp) {
+            // First, try to sign in to check if user already exists
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            // If sign in successful, user already exists
+            if (signInData.session) {
+                showMessage('You are already registered! Signing you in...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+                return;
+            }
+
+            // If user doesn't exist, create new account
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
-                    emailRedirectTo: `${window.location.origin}/index.html`
+                    emailRedirectTo: `${window.location.origin}/index.html`,
+                    data: {
+                        email: email
+                    }
                 }
             });
 
-            if (error) throw error;
+            if (error) {
+                // Check if error is about user already exists
+                if (error.message.includes('already registered') || error.message.includes('already exists')) {
+                    showMessage('This email is already registered. Please sign in instead.', 'error');
+                    setTimeout(() => {
+                        toggleAuthMode();
+                    }, 2000);
+                    return;
+                }
+                throw error;
+            }
 
-            if (data.user && data.session) {
+            // Successfully created account
+            if (data.session) {
                 showMessage('Account created successfully!', 'success');
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1000);
-            } else {
-                showMessage('Please check your email to confirm your account', 'info');
+            } else if (data.user) {
+                // If no session but user exists, try to sign in
+                const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+
+                if (loginError) throw loginError;
+
+                showMessage('Account created successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
             }
         } else {
+            // Sign in flow
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
@@ -86,9 +128,12 @@ async function handleAuth(e) {
         if (error.message.includes('Invalid login credentials')) {
             errorMessage = 'Invalid email or password';
         } else if (error.message.includes('User already registered')) {
-            errorMessage = 'This email is already registered. Please sign in.';
+            errorMessage = 'This email is already registered. Please sign in instead.';
+            setTimeout(() => {
+                if (isSignUp) toggleAuthMode();
+            }, 2000);
         } else if (error.message.includes('Email not confirmed')) {
-            errorMessage = 'Please confirm your email before signing in';
+            errorMessage = 'Please verify your email address';
         } else if (error.message) {
             errorMessage = error.message;
         }
