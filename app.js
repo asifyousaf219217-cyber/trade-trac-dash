@@ -1,5 +1,5 @@
 import { finnhubAPI, formatNumber } from './api.js';
-import { supabase } from './src/integrations/supabase/client.js';
+import { supabase } from './src/integrations/supabase/client.ts';
 
 // Theme Management
 function initTheme() {
