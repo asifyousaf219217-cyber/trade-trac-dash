@@ -1,4 +1,5 @@
 import { finnhubAPI, formatNumber } from './api.js';
+import { supabase } from './src/integrations/supabase/client.js';
 
 // Theme Management
 function initTheme() {
@@ -171,11 +172,55 @@ function initMobileMenu() {
     }
 }
 
+// Auth State Management
+function initAuth() {
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (!loginBtn || !logoutBtn) return;
+
+    // Set up auth state listener
+    supabase.auth.onAuthStateChange((event, session) => {
+        updateAuthUI(session);
+    });
+
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        updateAuthUI(session);
+    });
+
+    // Logout handler
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    });
+}
+
+function updateAuthUI(session) {
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (!loginBtn || !logoutBtn) return;
+
+    if (session) {
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-flex';
+    } else {
+        loginBtn.style.display = 'inline-flex';
+        logoutBtn.style.display = 'none';
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initMobileMenu();
     initTicker();
+    initAuth();
     
     // Load data for home page
     if (window.location.pathname === '/' || window.location.pathname.includes('index.html')) {
