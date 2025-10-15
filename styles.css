@@ -1181,6 +1181,35 @@ body {
     animation: fadeIn 0.4s ease-out;
 }
 
+.auth-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.auth-logo .logo-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary), #3b82f6);
+    border-radius: 12px;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.auth-logo .logo-text {
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
 .auth-header {
     text-align: center;
     margin-bottom: 2rem;
