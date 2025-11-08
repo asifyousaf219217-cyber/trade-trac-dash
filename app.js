@@ -12,15 +12,12 @@ import { supabase } from './src/integrations/supabase/client.ts';
 function initTheme() {
     // check if user has a saved theme preference, default to light
     const savedTheme = localStorage.getItem('theme') || 'light';
-    const html = document.documentElement;
     
-    // applying the saved theme
+    // applying the saved theme to body element
     if (savedTheme === 'dark') {
-        html.classList.add('dark');
-        html.style.colorScheme = 'dark';
+        document.body.classList.add('dark');
     } else {
-        html.classList.remove('dark');
-        html.style.colorScheme = 'light';
+        document.body.classList.remove('dark');
     }
     
     // getting the theme toggle button
@@ -34,17 +31,14 @@ function initTheme() {
 
 // function to switch between light and dark mode
 function toggleTheme() {
-    const html = document.documentElement;
-    const isDark = html.classList.contains('dark');
+    const isDark = document.body.classList.contains('dark');
     const newTheme = isDark ? 'light' : 'dark';
     
-    // applying new theme
+    // applying new theme to body
     if (newTheme === 'dark') {
-        html.classList.add('dark');
-        html.style.colorScheme = 'dark';
+        document.body.classList.add('dark');
     } else {
-        html.classList.remove('dark');
-        html.style.colorScheme = 'light';
+        document.body.classList.remove('dark');
     }
     
     // saving preference so it persists on reload
