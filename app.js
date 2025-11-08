@@ -1,11 +1,20 @@
+// importing API functions from my api.js file
 import { finnhubAPI, formatNumber } from './api.js';
+// importing supabase for auth stuff
 import { supabase } from './src/integrations/supabase/client.ts';
 
-// Theme Management
+/* 
+   THEME MANAGEMENT
+   This handles switching between light and dark mode
+*/
+
+// function to set up the theme when page loads
 function initTheme() {
+    // check if user has a saved theme preference, default to light
     const savedTheme = localStorage.getItem('theme') || 'light';
     const html = document.documentElement;
     
+    // applying the saved theme
     if (savedTheme === 'dark') {
         html.classList.add('dark');
         html.style.colorScheme = 'dark';
@@ -14,18 +23,22 @@ function initTheme() {
         html.style.colorScheme = 'light';
     }
     
+    // getting the theme toggle button
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
         updateThemeIcon(savedTheme);
+        // adding click listener to toggle theme
         themeToggle.addEventListener('click', toggleTheme);
     }
 }
 
+// function to switch between light and dark mode
 function toggleTheme() {
     const html = document.documentElement;
     const isDark = html.classList.contains('dark');
     const newTheme = isDark ? 'light' : 'dark';
     
+    // applying new theme
     if (newTheme === 'dark') {
         html.classList.add('dark');
         html.style.colorScheme = 'dark';
@@ -34,33 +47,45 @@ function toggleTheme() {
         html.style.colorScheme = 'light';
     }
     
+    // saving preference so it persists on reload
     localStorage.setItem('theme', newTheme);
     updateThemeIcon(newTheme);
 }
 
+// function to update the icon in the theme button
 function updateThemeIcon(theme) {
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
         const icon = themeToggle.querySelector('i');
         if (icon) {
+            // moon icon for light mode, sun icon for dark mode
             icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
         }
     }
 }
 
-// Ticker Animation with Real Data
+/* 
+   TICKER ANIMATION
+   The moving bar at top showing stock prices
+*/
+
+// function to load real stock data into the ticker
 async function initTicker() {
     const tickerContent = document.getElementById('tickerContent');
     if (!tickerContent) return;
 
+    // list of stock symbols to show in ticker
     const symbols = ['AAPL', 'TSLA', 'GOOGL', 'AMZN', 'MSFT', 'META', 'NVDA', 'AMD'];
     
+    // showing loading message while fetching data
     tickerContent.innerHTML = '<div class="ticker-item">Loading...</div>';
     
     try {
+        // fetching quote data for all symbols at once
         const promises = symbols.map(symbol => finnhubAPI.getQuote(symbol));
         const quotes = await Promise.all(promises);
         
+        // converting quotes to ticker format
         const tickerData = quotes.map((quote, index) => {
             if (quote && quote.c && quote.dp !== undefined) {
                 return {
@@ -72,9 +97,10 @@ async function initTicker() {
             return null;
         }).filter(item => item !== null);
 
-        // Duplicate data for seamless loop
+        // duplicating data for seamless infinite scroll
         const duplicatedData = [...tickerData, ...tickerData];
         
+        // building HTML for ticker items
         tickerContent.innerHTML = duplicatedData.map(stock => `
             <div class="ticker-item">
                 <span class="ticker-symbol">${stock.symbol}</span>
@@ -84,26 +110,37 @@ async function initTicker() {
             </div>
         `).join('');
     } catch (error) {
+        // if API fails, show error message
         console.error('Error loading ticker:', error);
         tickerContent.innerHTML = '<div class="ticker-item">Unable to load market data</div>';
     }
 }
 
-// Load Stock Cards on Home Page
+/* 
+   STOCK CARDS
+   Loading the top 3 stocks on homepage
+*/
+
+// function to load and display top stocks
 async function loadTopStocks() {
     const container = document.getElementById('topStocks');
     if (!container) return;
 
+    // picking 3 popular stocks to display
     const symbols = ['AAPL', 'TSLA', 'AMZN'];
     
+    // showing loading skeleton
     container.innerHTML = '<div class="loading">Loading stocks...</div>';
     
     try {
+        // fetching quote data for these stocks
         const promises = symbols.map(symbol => finnhubAPI.getQuote(symbol));
         const quotes = await Promise.all(promises);
         
+        // clearing container
         container.innerHTML = '';
         
+        // creating a card for each stock
         quotes.forEach((quote, index) => {
             if (quote && quote.c) {
                 const card = createStockCard(symbols[index], quote);
@@ -111,18 +148,22 @@ async function loadTopStocks() {
             }
         });
     } catch (error) {
+        // handling errors gracefully
         console.error('Error loading stocks:', error);
         container.innerHTML = '<div class="loading">Unable to load stocks</div>';
     }
 }
 
+// function to create a single stock card element
 function createStockCard(symbol, quote) {
     const card = document.createElement('div');
     card.className = 'stock-card hover-lift';
     
+    // checking if stock is up or down
     const isPositive = quote.dp >= 0;
     const icon = isPositive ? 'fa-chart-line' : 'fa-chart-line';
     
+    // building the card HTML
     card.innerHTML = `
         <div class="stock-header">
             <div>
@@ -143,22 +184,29 @@ function createStockCard(symbol, quote) {
     return card;
 }
 
-// Mobile Menu Toggle
+/* 
+   MOBILE MENU
+   Hamburger menu for phones
+*/
+
+// function to set up mobile menu toggle
 function initMobileMenu() {
     const menuToggle = document.getElementById('mobileMenuToggle');
     const navLinks = document.querySelector('.nav-links');
     
     if (menuToggle && navLinks) {
+        // toggle menu when hamburger is clicked
         menuToggle.addEventListener('click', () => {
             navLinks.classList.toggle('active');
             const icon = menuToggle.querySelector('i');
             if (icon) {
+                // switching between hamburger and X icon
                 icon.classList.toggle('fa-bars');
                 icon.classList.toggle('fa-times');
             }
         });
         
-        // Close menu when clicking on a link
+        // close menu when a link is clicked
         navLinks.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
@@ -172,27 +220,33 @@ function initMobileMenu() {
     }
 }
 
-// Auth State Management
+/* 
+   AUTHENTICATION
+   Handling login/logout buttons
+*/
+
+// function to initialize auth state checking
 function initAuth() {
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
 
     if (!loginBtn || !logoutBtn) return;
 
-    // Set up auth state listener
+    // listening for auth state changes
     supabase.auth.onAuthStateChange((event, session) => {
         updateAuthUI(session);
     });
 
-    // Check initial session
+    // checking if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
         updateAuthUI(session);
     });
 
-    // Logout handler
+    // logout button handler
     logoutBtn.addEventListener('click', async () => {
         try {
             await supabase.auth.signOut();
+            // redirecting to home page after logout
             window.location.href = 'index.html';
         } catch (error) {
             console.error('Logout error:', error);
@@ -200,6 +254,7 @@ function initAuth() {
     });
 }
 
+// function to show/hide login and logout buttons
 function updateAuthUI(session) {
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -207,22 +262,29 @@ function updateAuthUI(session) {
     if (!loginBtn || !logoutBtn) return;
 
     if (session) {
+        // user is logged in - show logout button
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-flex';
     } else {
+        // user is not logged in - show login button
         loginBtn.style.display = 'inline-flex';
         logoutBtn.style.display = 'none';
     }
 }
 
-// Initialize on page load
+/* 
+   INITIALIZATION
+   Starting everything when page loads
+*/
+
+// running all initialization functions when page is ready
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    initMobileMenu();
-    initTicker();
-    initAuth();
+    initTheme();        // setting up theme
+    initMobileMenu();   // setting up mobile menu
+    initTicker();       // loading ticker data
+    initAuth();         // checking auth status
     
-    // Load data for home page
+    // loading stock cards only on home page
     if (window.location.pathname === '/' || window.location.pathname.includes('index.html')) {
         loadTopStocks();
     }
