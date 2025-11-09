@@ -244,12 +244,16 @@ body.dark .ticker {
 }
 
 /* ========== HERO SECTION ========== */
-/* big section at top of homepage */
+/* big section at top of homepage with diagonal cut at bottom */
 
 .hero-creative {
-    padding: 80px 0;
+    padding: 80px 0 120px 0;
     /* hero has same gradient background as body */
     background: transparent;
+    position: relative;
+    /* creating diagonal cut at bottom using clip-path - this is unique! */
+    clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+    margin-bottom: -40px; /* overlapping next section for seamless look */
 }
 
 body.dark .hero-creative {
@@ -372,24 +376,42 @@ body.dark .hero-stat-divider {
     height: 500px;
 }
 
-/* big circle decoration - cyan glow effect */
+/* morphing blob shape - this is super unique! */
 .hero-circle {
     position: absolute;
     width: 400px;
     height: 400px;
     /* cyan glow in background */
-    background: radial-gradient(circle, rgba(79, 195, 247, 0.2), transparent);
-    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79, 195, 247, 0.3), rgba(129, 212, 250, 0.1));
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     filter: blur(60px);
+    /* morphing animation - blob shape changes organically */
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    animation: morphBlob 8s ease-in-out infinite;
+}
+
+/* keyframes for morphing blob - creates organic liquid effect */
+@keyframes morphBlob {
+    0%, 100% {
+        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    }
+    25% {
+        border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    }
+    50% {
+        border-radius: 70% 30% 50% 50% / 30% 50% 70% 50%;
+    }
+    75% {
+        border-radius: 40% 70% 60% 30% / 70% 50% 40% 60%;
+    }
 }
 
 /* floating card animations */
 .floating-card {
     position: absolute;
-    /* glass-like cards with transparency */
+    /* glass-like cards with transparency and grain texture */
     background-color: rgba(44, 83, 100, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
@@ -399,6 +421,10 @@ body.dark .hero-stat-divider {
     gap: 1rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px); /* glass effect */
+    /* adding grain texture for unique look */
+    background-image: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05' /%3E%3C/svg%3E"),
+        linear-gradient(135deg, rgba(44, 83, 100, 0.3), rgba(44, 83, 100, 0.25));
 }
 
 body.dark .floating-card {
@@ -568,18 +594,29 @@ body.dark .btn-outline {
 }
 
 .stock-card {
-    /* glass-like cards */
+    /* glass-like cards with noise texture for unique look */
     background-color: rgba(44, 83, 100, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 1.5rem;
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
+    /* adding 3D transform preparation for mouse tilt effect */
+    transform-style: preserve-3d;
+    position: relative;
+    /* adding grain texture overlay for unique analog-digital hybrid feel */
+    background-image: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05' /%3E%3C/svg%3E"),
+        linear-gradient(135deg, rgba(44, 83, 100, 0.3), rgba(44, 83, 100, 0.2));
 }
 
 body.dark .stock-card {
     background-color: rgba(26, 26, 26, 0.5);
     border-color: rgba(255, 255, 255, 0.05);
+    /* grain texture for dark mode too */
+    background-image: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05' /%3E%3C/svg%3E"),
+        linear-gradient(135deg, rgba(26, 26, 26, 0.5), rgba(26, 26, 26, 0.4));
 }
 
 .stock-header {
@@ -638,8 +675,13 @@ body.dark .stock-card-skeleton {
 /* ========== FEATURES ========== */
 
 .features-section {
-    /* slightly darker section */
+    /* slightly darker section with diagonal top cut */
     background-color: rgba(15, 32, 39, 0.5);
+    position: relative;
+    padding-top: 6rem;
+    /* diagonal cut at top matching hero's bottom cut */
+    clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 100%);
+    margin-top: -80px;
 }
 
 body.dark .features-section {
@@ -654,7 +696,7 @@ body.dark .features-section {
 }
 
 .feature-box {
-    /* glass cards for features */
+    /* glass cards with grain texture - super unique look */
     background-color: rgba(44, 83, 100, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
@@ -662,6 +704,13 @@ body.dark .features-section {
     text-align: center;
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
+    /* 3D tilt preparation */
+    transform-style: preserve-3d;
+    position: relative;
+    /* grain texture for analog-digital hybrid aesthetic */
+    background-image: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05' /%3E%3C/svg%3E"),
+        linear-gradient(135deg, rgba(44, 83, 100, 0.3), rgba(44, 83, 100, 0.2));
 }
 
 body.dark .feature-box {
@@ -714,11 +763,15 @@ body.dark .feature-box {
 /* ========== CALL TO ACTION ========== */
 
 .cta-section {
-    padding: 4rem 0;
+    padding: 5rem 0;
+    /* diagonal cut at top for continuous flow */
+    clip-path: polygon(0 8%, 100% 0, 100% 100%, 0 100%);
+    margin-top: -80px;
+    position: relative;
 }
 
 .cta-box {
-    /* bright cyan gradient box */
+    /* bright cyan gradient box with grain texture */
     background: linear-gradient(135deg, #4fc3f7, #29b6f6);
     border-radius: 24px;
     padding: 4rem 3rem;
@@ -726,6 +779,11 @@ body.dark .feature-box {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 20px 60px rgba(79, 195, 247, 0.3);
+    position: relative;
+    /* adding subtle grain for unique texture */
+    background-image: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03' /%3E%3C/svg%3E"),
+        linear-gradient(135deg, #4fc3f7, #29b6f6);
 }
 
 .cta-title {

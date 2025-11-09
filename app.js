@@ -175,6 +175,27 @@ function createStockCard(symbol, quote) {
         </div>
     `;
     
+    // adding 3D tilt effect on mouse move - this is super unique!
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left; // mouse x position within card
+        const y = e.clientY - rect.top;  // mouse y position within card
+        
+        // calculating rotation based on mouse position
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = (y - centerY) / 10; // tilt up/down
+        const rotateY = (centerX - x) / 10; // tilt left/right
+        
+        // applying 3D transform
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+    });
+    
+    // reset when mouse leaves
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+    });
+    
     return card;
 }
 
@@ -267,6 +288,41 @@ function updateAuthUI(session) {
 }
 
 /* 
+   3D TILT EFFECT FOR FEATURE BOXES
+   Making feature cards tilt based on mouse position - super unique!
+*/
+
+// function to add 3D tilt to all feature boxes
+function init3DTilt() {
+    const featureBoxes = document.querySelectorAll('.feature-box');
+    
+    featureBoxes.forEach(box => {
+        // adding mouse move listener to each feature box
+        box.addEventListener('mousemove', (e) => {
+            const rect = box.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // calculating center point
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // calculating rotation angles based on mouse position
+            const rotateX = (y - centerY) / 15;
+            const rotateY = (centerX - x) / 15;
+            
+            // applying 3D transform with perspective
+            box.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+        });
+        
+        // resetting transform when mouse leaves
+        box.addEventListener('mouseleave', () => {
+            box.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+        });
+    });
+}
+
+/* 
    INITIALIZATION
    Starting everything when page loads
 */
@@ -277,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobileMenu();   // setting up mobile menu
     initTicker();       // loading ticker data
     initAuth();         // checking auth status
+    init3DTilt();       // adding 3D tilt to feature boxes
     
     // loading stock cards only on home page
     if (window.location.pathname === '/' || window.location.pathname.includes('index.html')) {
