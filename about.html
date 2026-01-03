@@ -34,6 +34,45 @@
                 <button class="theme-toggle" id="themeToggle">
                     <i class="fas fa-moon"></i>
                 </button>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <button class="profile-trigger" id="profileTrigger">
+                        <div class="profile-avatar" id="navAvatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <i class="fas fa-chevron-down profile-chevron"></i>
+                    </button>
+                    <div class="profile-menu" id="profileMenu">
+                        <div class="profile-menu-header">
+                            <div class="profile-menu-avatar" id="menuAvatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="profile-menu-info">
+                                <span class="profile-menu-name" id="menuName">User</span>
+                                <span class="profile-menu-email" id="menuEmail">user@email.com</span>
+                            </div>
+                        </div>
+                        <div class="profile-menu-divider"></div>
+                        <a href="profile.html" class="profile-menu-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="#" class="profile-menu-item">
+                            <i class="fas fa-star"></i>
+                            <span>Watchlist</span>
+                        </a>
+                        <div class="profile-menu-divider"></div>
+                        <button class="profile-menu-item logout-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sign Out</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Login Button -->
+                <a href="auth.html" class="btn btn-primary" id="loginBtn">
+                    <i class="fas fa-user"></i>
+                    Sign In
+                </a>
             </div>
         </div>
     </nav>
