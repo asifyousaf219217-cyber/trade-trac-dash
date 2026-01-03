@@ -5,6 +5,11 @@ export default defineConfig({
   server: {
     port: 8080
   },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
   build: {
     rollupOptions: {
       input: {
@@ -14,6 +19,8 @@ export default defineConfig({
         trends: resolve(__dirname, 'trends.html'),
         news: resolve(__dirname, 'news.html'),
         about: resolve(__dirname, 'about.html'),
+        auth: resolve(__dirname, 'auth.html'),
+        profile: resolve(__dirname, 'profile.html'),
       },
     },
   },
