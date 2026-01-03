@@ -1,4 +1,6 @@
-import { newsAPI, getTimeAgo } from './api.js';
+import { getTimeAgo } from './api.js';
+
+const SUPABASE_URL = 'https://artyddpgtnbkdyybponr.supabase.co';
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.location.pathname.includes('news.html')) return;
@@ -6,22 +8,38 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAllNews();
 });
 
+// Fetch news via edge function (avoids CORS issues)
+async function fetchNews(query = 'finance OR stock market', pageSize = 20) {
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/functions/v1/news-proxy?q=${encodeURIComponent(query)}&pageSize=${pageSize}`
+        );
+        if (!response.ok) throw new Error('Failed to fetch news');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching news:', error);
+        return null;
+    }
+}
+
 // Load All News
 async function loadAllNews() {
     const container = document.getElementById('allNews');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading news...</div>';
     
     try {
-        // Fetch all news with a broader query
-        const data = await newsAPI.getEverything('finance OR stock OR market OR economy OR business', 50);
+        const data = await fetchNews('finance OR stock OR market OR economy OR business', 30);
         
         if (data && data.articles && data.articles.length > 0) {
             renderNewsCards(container, data.articles);
         } else {
-            container.innerHTML = '<div class="loading">No articles available</div>';
+            container.innerHTML = '<div class="loading">No articles available. Please try again later.</div>';
         }
     } catch (error) {
         console.error('Error loading news:', error);
-        container.innerHTML = '<div class="loading">Unable to load news</div>';
+        container.innerHTML = '<div class="loading">Unable to load news. Please try again later.</div>';
     }
 }
 

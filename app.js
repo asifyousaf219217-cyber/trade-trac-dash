@@ -69,10 +69,10 @@ async function initTicker() {
     if (!tickerContent) return;
 
     // list of stock symbols to show in ticker
-    const symbols = ['AAPL', 'TSLA', 'GOOGL', 'AMZN', 'MSFT', 'META', 'NVDA', 'AMD'];
+    const symbols = ['AAPL', 'TSLA', 'GOOGL', 'AMZN', 'MSFT', 'META'];
     
     // showing loading message while fetching data
-    tickerContent.innerHTML = '<div class="ticker-item">Loading...</div>';
+    tickerContent.innerHTML = '<div class="ticker-item">Loading market data...</div>';
     
     try {
         // fetching quote data for all symbols at once
@@ -91,6 +91,11 @@ async function initTicker() {
             return null;
         }).filter(item => item !== null);
 
+        if (tickerData.length === 0) {
+            tickerContent.innerHTML = '<div class="ticker-item">Market data unavailable</div>';
+            return;
+        }
+
         // duplicating data for seamless infinite scroll
         const duplicatedData = [...tickerData, ...tickerData];
         
@@ -104,9 +109,9 @@ async function initTicker() {
             </div>
         `).join('');
     } catch (error) {
-        // if API fails, show error message
+        // if API fails, show static fallback
         console.error('Error loading ticker:', error);
-        tickerContent.innerHTML = '<div class="ticker-item">Unable to load market data</div>';
+        tickerContent.innerHTML = '<div class="ticker-item">Market data unavailable</div>';
     }
 }
 
