@@ -1,53 +1,76 @@
+// ============================================
+// AUTH.JS - Handles user login and signup
+// This file manages all the authentication stuff
+// ============================================
+
+// importing supabase - this is our database and auth service
 import { supabase } from './src/integrations/supabase/client.ts';
 
+// keeping track of whether we're in signup mode or signin mode
 let isSignUp = false;
 
-// Initialize auth page
+// ============================================
+// MAIN FUNCTION - sets up everything when page loads
+// ============================================
 function initAuth() {
-    // Set up auth state listener for session persistence
+    // this listens for when user logs in or out
+    // if they log in, send them to the home page
     supabase.auth.onAuthStateChange((event, session) => {
         if (session) {
-            // User is logged in, redirect to home
+            // user just logged in! redirect them home
             window.location.href = 'index.html';
         }
     });
 
-    // Check if user is already logged in
+    // checking if user is already logged in when page loads
+    // if they are, no need to show login page - just send them home
     supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
             window.location.href = 'index.html';
         }
     });
 
+    // getting all the form elements we need
     const form = document.getElementById('authForm');
     const toggleModeBtn = document.getElementById('toggleMode');
     const passwordToggle = document.getElementById('passwordToggle');
     const googleSignInBtn = document.getElementById('googleSignIn');
 
+    // setting up click and submit handlers
     form.addEventListener('submit', handleAuth);
     toggleModeBtn.addEventListener('click', toggleAuthMode);
     passwordToggle.addEventListener('click', togglePasswordVisibility);
     googleSignInBtn.addEventListener('click', handleGoogleSignIn);
 }
 
-// Handle Google Sign In
+// ============================================
+// GOOGLE SIGN IN - lets users login with their google account
+// ============================================
 async function handleGoogleSignIn() {
+    // getting the google button so we can disable it while loading
     const googleBtn = document.getElementById('googleSignIn');
     googleBtn.disabled = true;
     googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
 
     try {
+        // calling supabase to start google oauth flow
+        // this will redirect user to google's login page
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
+                // after google login, come back to our home page
                 redirectTo: `${window.location.origin}/index.html`
             }
         });
 
+        // if something went wrong, throw an error
         if (error) throw error;
     } catch (error) {
+        // oops! something went wrong with google login
         console.error('Google sign in error:', error);
         showMessage('Failed to connect with Google. Please try again.', 'error');
+        
+        // resetting the button back to normal
         googleBtn.disabled = false;
         googleBtn.innerHTML = `
             <svg viewBox="0 0 24 24" width="20" height="20">
@@ -61,39 +84,46 @@ async function handleGoogleSignIn() {
     }
 }
 
-// Handle sign in / sign up
+// ============================================
+// EMAIL/PASSWORD LOGIN - handles the main form submission
+// ============================================
 async function handleAuth(e) {
+    // stopping the form from refreshing the page
     e.preventDefault();
 
+    // getting the values user typed in
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const submitBtn = document.getElementById('authSubmit');
     const submitText = document.getElementById('submitText');
 
-    // Basic validation
+    // making sure they filled in both fields
     if (!email || !password) {
         showMessage('Please fill in all fields', 'error');
         return;
     }
 
+    // password needs to be at least 6 characters
     if (password.length < 6) {
         showMessage('Password must be at least 6 characters', 'error');
         return;
     }
 
-    // Disable submit button
+    // disabling the button while we process their request
     submitBtn.disabled = true;
     submitText.textContent = isSignUp ? 'Creating account...' : 'Signing in...';
 
     try {
         if (isSignUp) {
-            // First, try to sign in to check if user already exists
+            // ===== SIGNUP FLOW =====
+            
+            // first, try to sign in to see if user already has an account
             const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
 
-            // If sign in successful, user already exists
+            // if sign in worked, they already have an account!
             if (signInData.session) {
                 showMessage('You are already registered! Signing you in...', 'info');
                 setTimeout(() => {
@@ -102,11 +132,12 @@ async function handleAuth(e) {
                 return;
             }
 
-            // If user doesn't exist, create new account
+            // they don't have an account, so let's create one
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
+                    // where to send them after email verification
                     emailRedirectTo: `${window.location.origin}/index.html`,
                     data: {
                         email: email
@@ -114,8 +145,9 @@ async function handleAuth(e) {
                 }
             });
 
+            // checking for errors
             if (error) {
-                // Check if error is about user already exists
+                // special handling for "already registered" error
                 if (error.message.includes('already registered') || error.message.includes('already exists')) {
                     showMessage('This email is already registered. Please sign in instead.', 'error');
                     setTimeout(() => {
@@ -126,14 +158,15 @@ async function handleAuth(e) {
                 throw error;
             }
 
-            // Successfully created account
+            // account created! now let's log them in
             if (data.session) {
                 showMessage('Account created successfully!', 'success');
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1000);
             } else if (data.user) {
-                // If no session but user exists, try to sign in
+                // sometimes supabase creates user but no session
+                // so we try to sign them in manually
                 const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
                     email,
                     password,
@@ -147,7 +180,9 @@ async function handleAuth(e) {
                 }, 1000);
             }
         } else {
-            // Sign in flow
+            // ===== SIGNIN FLOW =====
+            
+            // trying to log the user in with email and password
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
@@ -155,15 +190,17 @@ async function handleAuth(e) {
 
             if (error) throw error;
 
+            // login successful!
             showMessage('Signed in successfully!', 'success');
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 1000);
         }
     } catch (error) {
+        // something went wrong - let's show a helpful error message
         console.error('Auth error:', error);
         
-        // Handle specific error messages
+        // figuring out what error message to show
         let errorMessage = 'An error occurred. Please try again.';
         
         if (error.message.includes('Invalid login credentials')) {
@@ -181,15 +218,20 @@ async function handleAuth(e) {
         
         showMessage(errorMessage, 'error');
     } finally {
+        // always reset the button when we're done
         submitBtn.disabled = false;
         submitText.textContent = isSignUp ? 'Sign Up' : 'Sign In';
     }
 }
 
-// Toggle between sign in and sign up
+// ============================================
+// TOGGLE MODE - switches between signin and signup
+// ============================================
 function toggleAuthMode() {
+    // flipping the mode
     isSignUp = !isSignUp;
     
+    // getting all the text elements we need to update
     const authTitle = document.getElementById('authTitle');
     const authSubtitle = document.getElementById('authSubtitle');
     const submitText = document.getElementById('submitText');
@@ -197,9 +239,10 @@ function toggleAuthMode() {
     const toggleModeBtn = document.getElementById('toggleMode');
     const authMessage = document.getElementById('authMessage');
 
-    // Hide any messages
+    // hiding any old messages
     authMessage.style.display = 'none';
 
+    // updating all the text based on which mode we're in
     if (isSignUp) {
         authTitle.textContent = 'Create Account';
         authSubtitle.textContent = 'Start tracking your investments';
@@ -215,12 +258,15 @@ function toggleAuthMode() {
     }
 }
 
-// Toggle password visibility
+// ============================================
+// PASSWORD VISIBILITY - shows/hides password
+// ============================================
 function togglePasswordVisibility() {
     const passwordInput = document.getElementById('password');
     const passwordToggle = document.getElementById('passwordToggle');
     const icon = passwordToggle.querySelector('i');
 
+    // if password is hidden, show it. if shown, hide it
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         icon.classList.remove('fa-eye');
@@ -232,14 +278,16 @@ function togglePasswordVisibility() {
     }
 }
 
-// Show message to user
+// ============================================
+// SHOW MESSAGE - displays feedback to user
+// ============================================
 function showMessage(message, type = 'info') {
     const messageEl = document.getElementById('authMessage');
     messageEl.textContent = message;
     messageEl.className = `auth-message auth-message-${type}`;
     messageEl.style.display = 'block';
 
-    // Auto-hide success messages after 5 seconds
+    // success messages go away after 5 seconds
     if (type === 'success') {
         setTimeout(() => {
             messageEl.style.display = 'none';
@@ -247,9 +295,13 @@ function showMessage(message, type = 'info') {
     }
 }
 
-// Initialize on page load
+// ============================================
+// START EVERYTHING - runs when page loads
+// ============================================
 if (document.readyState === 'loading') {
+    // page is still loading, wait for it
     document.addEventListener('DOMContentLoaded', initAuth);
 } else {
+    // page already loaded, run now
     initAuth();
 }
