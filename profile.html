@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - StockPulse</title>
+    <meta name="description" content="Manage your StockPulse profile and account settings">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">StockPulse</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="markets.html" class="nav-link">Markets</a>
+                <a href="currencies.html" class="nav-link">Currencies</a>
+                <a href="trends.html" class="nav-link">Trends</a>
+                <a href="news.html" class="nav-link">News</a>
+                <a href="about.html" class="nav-link">About</a>
+            </div>
+            
+            <div class="nav-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="search" placeholder="Search stocks..." id="navSearch">
+                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <button class="profile-trigger" id="profileTrigger">
+                        <div class="profile-avatar" id="navAvatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <i class="fas fa-chevron-down profile-chevron"></i>
+                    </button>
+                    <div class="profile-menu" id="profileMenu">
+                        <div class="profile-menu-header">
+                            <div class="profile-menu-avatar" id="menuAvatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="profile-menu-info">
+                                <span class="profile-menu-name" id="menuName">User</span>
+                                <span class="profile-menu-email" id="menuEmail">user@email.com</span>
+                            </div>
+                        </div>
+                        <div class="profile-menu-divider"></div>
+                        <a href="profile.html" class="profile-menu-item active">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="#" class="profile-menu-item" id="settingsLink">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" class="profile-menu-item" id="watchlistLink">
+                            <i class="fas fa-star"></i>
+                            <span>Watchlist</span>
+                        </a>
+                        <div class="profile-menu-divider"></div>
+                        <button class="profile-menu-item logout-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sign Out</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Login Button (shown when not logged in) -->
+                <a href="auth.html" class="btn btn-primary" id="loginBtn" style="display: none;">
+                    <i class="fas fa-user"></i>
+                    Sign In
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Page Content -->
+    <main class="page-container">
+        <div class="container">
+            <!-- Profile Header -->
+            <div class="profile-page-header">
+                <div class="profile-cover">
+                    <div class="profile-cover-overlay"></div>
+                </div>
+                <div class="profile-header-content">
+                    <div class="profile-main-avatar" id="profileAvatar">
+                        <i class="fas fa-user"></i>
+                        <button class="avatar-edit-btn" id="avatarEditBtn">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <div class="profile-header-info">
+                        <h1 class="profile-name" id="profileName">Loading...</h1>
+                        <p class="profile-email" id="profileEmail">Loading...</p>
+                        <div class="profile-badges">
+                            <span class="profile-badge">
+                                <i class="fas fa-check-circle"></i>
+                                Verified
+                            </span>
+                            <span class="profile-badge">
+                                <i class="fas fa-chart-line"></i>
+                                Investor
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tabs -->
+            <div class="profile-tabs">
+                <button class="profile-tab active" data-tab="personal">
+                    <i class="fas fa-user"></i>
+                    Personal Info
+                </button>
+                <button class="profile-tab" data-tab="preferences">
+                    <i class="fas fa-sliders-h"></i>
+                    Preferences
+                </button>
+                <button class="profile-tab" data-tab="notifications">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                </button>
+                <button class="profile-tab" data-tab="security">
+                    <i class="fas fa-shield-alt"></i>
+                    Security
+                </button>
+            </div>
+
+            <!-- Profile Content -->
+            <div class="profile-content">
+                <!-- Personal Info Tab -->
+                <div class="profile-tab-content active" id="personal-tab">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <h2><i class="fas fa-user-circle"></i> Personal Information</h2>
+                            <button class="edit-btn" id="editPersonalBtn">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                        </div>
+                        <form class="profile-form" id="personalForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="displayName">Display Name</label>
+                                    <input type="text" id="displayName" placeholder="Enter your display name" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="emailField">Email Address</label>
+                                    <input type="email" id="emailField" placeholder="your@email.com" disabled>
+                                    <span class="form-hint">Email cannot be changed</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" placeholder="+1 (555) 000-0000" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="timezone">Timezone</label>
+                                    <select id="timezone" disabled>
+                                        <option value="UTC">UTC (Coordinated Universal Time)</option>
+                                        <option value="America/New_York">Eastern Time (ET)</option>
+                                        <option value="America/Chicago">Central Time (CT)</option>
+                                        <option value="America/Denver">Mountain Time (MT)</option>
+                                        <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                                        <option value="Europe/London">London (GMT)</option>
+                                        <option value="Europe/Paris">Paris (CET)</option>
+                                        <option value="Asia/Tokyo">Tokyo (JST)</option>
+                                        <option value="Asia/Dubai">Dubai (GST)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="bio">Bio</label>
+                                <textarea id="bio" rows="4" placeholder="Tell us about yourself and your investment interests..." disabled></textarea>
+                            </div>
+                            <div class="form-actions" id="personalFormActions" style="display: none;">
+                                <button type="button" class="btn-secondary" id="cancelPersonalBtn">Cancel</button>
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Preferences Tab -->
+                <div class="profile-tab-content" id="preferences-tab">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <h2><i class="fas fa-sliders-h"></i> Trading Preferences</h2>
+                        </div>
+                        <form class="profile-form" id="preferencesForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="currency">Preferred Currency</label>
+                                    <select id="currency">
+                                        <option value="USD">USD - US Dollar</option>
+                                        <option value="EUR">EUR - Euro</option>
+                                        <option value="GBP">GBP - British Pound</option>
+                                        <option value="JPY">JPY - Japanese Yen</option>
+                                        <option value="CAD">CAD - Canadian Dollar</option>
+                                        <option value="AUD">AUD - Australian Dollar</option>
+                                        <option value="CHF">CHF - Swiss Franc</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="language">Language</label>
+                                    <select id="language">
+                                        <option value="en">English</option>
+                                        <option value="es">Español</option>
+                                        <option value="fr">Français</option>
+                                        <option value="de">Deutsch</option>
+                                        <option value="zh">中文</option>
+                                        <option value="ja">日本語</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="preference-section">
+                                <h3>Display Settings</h3>
+                                <div class="preference-item">
+                                    <div class="preference-info">
+                                        <span class="preference-label">Dark Mode</span>
+                                        <span class="preference-desc">Use dark theme across the platform</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="darkModeToggle">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="preference-item">
+                                    <div class="preference-info">
+                                        <span class="preference-label">Compact View</span>
+                                        <span class="preference-desc">Show more data in less space</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="compactView">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="preference-item">
+                                    <div class="preference-info">
+                                        <span class="preference-label">Real-time Updates</span>
+                                        <span class="preference-desc">Auto-refresh stock prices</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="realTimeUpdates" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Save Preferences
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Notifications Tab -->
+                <div class="profile-tab-content" id="notifications-tab">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <h2><i class="fas fa-bell"></i> Notification Settings</h2>
+                        </div>
+                        <form class="profile-form" id="notificationsForm">
+                            <div class="preference-section">
+                                <h3>Email Notifications</h3>
+                                <div class="preference-item">
+                                    <div class="preference-info">
+                                        <span class="preference-label">Price Alerts</span>
+                                        <span class="preference-desc">Get notified when stocks hit your target price</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="emailPriceAlerts" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="preference-item">
+                                    <div class="preference-info">
+                                        <span class="preference-label">Daily Digest</span>
+                                        <span class="preference-desc">Receive daily market summary</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="emailDigest" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="preference-item">
+                                    <div class="preference-info">
+                                        <span class="preference-label">Breaking News</span>
+                                        <span class="preference-desc">Important market news and updates</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="emailNews">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="preference-section">
+                                <h3>Push Notifications</h3>
+                                <div class="preference-item">
+                                    <div class="preference-info">
+                                        <span class="preference-label">Enable Push Notifications</span>
+                                        <span class="preference-desc">Receive real-time alerts in your browser</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="pushEnabled">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Save Notifications
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div class="profile-tab-content" id="security-tab">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <h2><i class="fas fa-shield-alt"></i> Security Settings</h2>
+                        </div>
+                        <div class="security-section">
+                            <div class="security-item">
+                                <div class="security-icon">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div class="security-info">
+                                    <h4>Password</h4>
+                                    <p>Last changed: Never</p>
+                                </div>
+                                <button class="btn-secondary" id="changePasswordBtn">
+                                    Change Password
+                                </button>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="security-info">
+                                    <h4>Two-Factor Authentication</h4>
+                                    <p>Add an extra layer of security</p>
+                                </div>
+                                <button class="btn-secondary" id="enable2faBtn">
+                                    Enable 2FA
+                                </button>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon google">
+                                    <i class="fab fa-google"></i>
+                                </div>
+                                <div class="security-info">
+                                    <h4>Google Account</h4>
+                                    <p id="googleStatus">Not connected</p>
+                                </div>
+                                <button class="btn-secondary" id="connectGoogleBtn">
+                                    Connect
+                                </button>
+                            </div>
+                        </div>
+                        <div class="security-section danger-zone">
+                            <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+                            <div class="security-item danger">
+                                <div class="security-info">
+                                    <h4>Delete Account</h4>
+                                    <p>Permanently delete your account and all data</p>
+                                </div>
+                                <button class="btn-danger" id="deleteAccountBtn">
+                                    Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="creative-footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-column">
+                    <div class="footer-logo">
+                        <div class="logo-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <span class="logo-text">StockPulse</span>
+                    </div>
+                    <p class="footer-about">
+                        Your trusted companion for real-time financial market insights. 
+                        Track stocks, currencies, and trends all in one powerful platform.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4 class="footer-heading">Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="markets.html">Markets</a></li>
+                        <li><a href="currencies.html">Currencies</a></li>
+                        <li><a href="trends.html">Trends</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4 class="footer-heading">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="news.html">Financial News</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="#">API Documentation</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4 class="footer-heading">Stay Updated</h4>
+                    <p class="footer-newsletter-text">Get market insights delivered to your inbox</p>
+                    <div class="newsletter-form">
+                        <input type="email" placeholder="Enter your email" class="newsletter-input">
+                        <button class="newsletter-button"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © 2024 StockPulse. Created by <strong>Eisa Abdul</strong> for Creative Computing Course
+                </p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <span class="footer-divider">|</span>
+                    <a href="#">Terms of Service</a>
+                    <span class="footer-divider">|</span>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Changes saved successfully</span>
+    </div>
+
+    <script type="module" src="profile.js"></script>
+</body>
+</html>

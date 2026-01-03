@@ -237,53 +237,118 @@ function initMobileMenu() {
 
 /* 
    AUTHENTICATION
-   Handling login/logout buttons
+   Handling login/logout buttons and profile dropdown
 */
 
 // function to initialize auth state checking
 function initAuth() {
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-
-    if (!loginBtn || !logoutBtn) return;
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileTrigger = document.getElementById('profileTrigger');
+    const profileMenu = document.getElementById('profileMenu');
 
     // listening for auth state changes
     supabase.auth.onAuthStateChange((event, session) => {
         updateAuthUI(session);
+        if (session) {
+            // Defer profile fetch to avoid deadlock
+            setTimeout(() => {
+                loadUserProfile(session.user);
+            }, 0);
+        }
     });
 
     // checking if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
         updateAuthUI(session);
-    });
-
-    // logout button handler
-    logoutBtn.addEventListener('click', async () => {
-        try {
-            await supabase.auth.signOut();
-            // redirecting to home page after logout
-            window.location.href = 'index.html';
-        } catch (error) {
-            console.error('Logout error:', error);
+        if (session) {
+            loadUserProfile(session.user);
         }
     });
+
+    // Profile dropdown toggle
+    if (profileTrigger && profileMenu) {
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileMenu.classList.toggle('active');
+            profileTrigger.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileTrigger.contains(e.target) && !profileMenu.contains(e.target)) {
+                profileMenu.classList.remove('active');
+                profileTrigger.classList.remove('active');
+            }
+        });
+    }
+
+    // logout button handler
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await supabase.auth.signOut();
+                // redirecting to home page after logout
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+    }
 }
 
-// function to show/hide login and logout buttons
+// Load user profile data
+async function loadUserProfile(user) {
+    if (!user) return;
+
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+        const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+        const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url;
+
+        // Update nav dropdown
+        const menuName = document.getElementById('menuName');
+        const menuEmail = document.getElementById('menuEmail');
+        const navAvatar = document.getElementById('navAvatar');
+        const menuAvatar = document.getElementById('menuAvatar');
+
+        if (menuName) menuName.textContent = displayName;
+        if (menuEmail) menuEmail.textContent = user?.email || '';
+
+        // Update avatars
+        [navAvatar, menuAvatar].forEach(el => {
+            if (!el) return;
+            if (avatarUrl) {
+                el.innerHTML = `<img src="${avatarUrl}" alt="${displayName}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">`;
+            } else {
+                const initial = displayName.charAt(0).toUpperCase();
+                el.innerHTML = `<span class="avatar-initial">${initial}</span>`;
+            }
+        });
+    } catch (error) {
+        console.error('Error loading profile:', error);
+    }
+}
+
+// function to show/hide login and profile dropdown
 function updateAuthUI(session) {
     const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    if (!loginBtn || !logoutBtn) return;
+    const profileDropdown = document.getElementById('profileDropdown');
 
     if (session) {
-        // user is logged in - show logout button
-        loginBtn.style.display = 'none';
-        logoutBtn.style.display = 'inline-flex';
+        // user is logged in - show profile dropdown
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (profileDropdown) profileDropdown.style.display = 'block';
     } else {
         // user is not logged in - show login button
-        loginBtn.style.display = 'inline-flex';
-        logoutBtn.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'inline-flex';
+        if (profileDropdown) profileDropdown.style.display = 'none';
     }
 }
 
