@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - StockPulse</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">StockPulse</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="markets.html" class="nav-link">Markets</a>
+                <a href="currencies.html" class="nav-link">Currencies</a>
+                <a href="trends.html" class="nav-link">Trends</a>
+                <a href="news.html" class="nav-link">News</a>
+                <a href="about.html" class="nav-link active">About</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <button class="profile-trigger" id="profileTrigger" aria-label="Open profile menu">
+                        <div class="profile-avatar" id="navAvatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </button>
+                    <div class="profile-menu" id="profileMenu">
+                        <div class="profile-menu-header">
+                            <div class="profile-menu-avatar" id="menuAvatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="profile-menu-info">
+                                <span class="profile-menu-name" id="menuName">User</span>
+                                <span class="profile-menu-email" id="menuEmail">user@email.com</span>
+                            </div>
+                        </div>
+                        <div class="profile-menu-divider"></div>
+                        <a href="profile.html" class="profile-menu-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="#" class="profile-menu-item">
+                            <i class="fas fa-star"></i>
+                            <span>Watchlist</span>
+                        </a>
+                        <div class="profile-menu-divider"></div>
+                        <button class="profile-menu-item logout-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sign Out</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Login Button -->
+                <a href="auth.html" class="btn btn-primary" id="loginBtn">
+                    <i class="fas fa-user"></i>
+                    Sign In
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container page-container">
+        <!-- Hero -->
+        <div class="about-hero">
+            <div class="about-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1 class="page-title">About StockPulse</h1>
+            <p class="about-description">
+                A comprehensive financial insights platform designed to help investors and enthusiasts stay informed about global markets
+            </p>
+        </div>
+
+        <!-- Vision -->
+        <div class="card">
+            <div class="card-body">
+                <div class="about-section">
+                    <i class="fas fa-sparkles text-primary"></i>
+                    <h2>The Vision</h2>
+                    <p>
+                        StockPulse was created as part of the Creative Computing course to demonstrate the integration of modern web technologies with real-time financial data APIs. The platform brings together stock market data, currency exchange rates, market trends, and financial news into a single, intuitive dashboard.
+                    </p>
+                    <p>
+                        Built with a focus on user experience and performance, StockPulse showcases how modern web development tools can create powerful, data-driven applications that provide real value to users interested in financial markets.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mt-4">
+            <h2 class="section-title text-center">Key Features</h2>
+            <div class="grid grid-4">
+                <div class="feature-card">
+                    <i class="fas fa-database"></i>
+                    <h3>Real-Time Data</h3>
+                    <p>Live market data powered by industry-leading financial APIs</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Market Analytics</h3>
+                    <p>Comprehensive analysis of stocks, sectors, and trends</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-globe"></i>
+                    <h3>Global Coverage</h3>
+                    <p>Track markets and currencies from around the world</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Fast & Responsive</h3>
+                    <p>Lightning-fast performance optimized for all devices</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technologies -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">Technologies Used</h3>
+            </div>
+            <div class="card-body">
+                <div class="tech-grid">
+                    <div class="tech-item">
+                        <span class="tech-icon">📄</span>
+                        <span>HTML5</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">🎨</span>
+                        <span>CSS3</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">📜</span>
+                        <span>JavaScript</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">📊</span>
+                        <span>Chart.js</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">🔌</span>
+                        <span>REST APIs</span>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">💻</span>
+                        <span>Responsive Design</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- APIs -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-code"></i>
+                    Data Sources & APIs
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="api-list">
+                    <div class="api-item">
+                        <span class="badge">Stock Data</span>
+                        <p>Finnhub.io - Real-time stock quotes and historical data</p>
+                    </div>
+                    <div class="api-item">
+                        <span class="badge">Financial News</span>
+                        <p>NewsAPI.org - Latest financial and business news</p>
+                    </div>
+                    <div class="api-item">
+                        <span class="badge">Currency Rates</span>
+                        <p>ExchangeRate.host - Live forex exchange rates</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Info -->
+        <div class="card project-card mt-4">
+            <div class="card-body text-center">
+                <h2 class="section-title">Project Details</h2>
+                <div class="project-info">
+                    <p><strong>Created by:</strong> Eisa Abdul</p>
+                    <p><strong>Course:</strong> Creative Computing</p>
+                    <p><strong>Purpose:</strong> Academic Project & Portfolio Demonstration</p>
+                    <p class="mt-3 text-muted">
+                        This project demonstrates the integration of modern web technologies with real-time financial data APIs to create a comprehensive market insights platform.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer section -->
+    <footer class="creative-footer">
+        <div class="container">
+            <!-- Top part of footer -->
+            <div class="footer-top">
+                <div class="footer-column">
+                    <div class="footer-logo">
+                        <div class="logo-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <span class="logo-text">StockPulse</span>
+                    </div>
+                    <p class="footer-about">
+                        Your trusted companion for real-time financial market insights. 
+                        Track stocks, currencies, and trends all in one powerful platform.
+                    </p>
+                    <!-- Social media icons -->
+                    <div class="footer-social">
+                        <a href="#" class="social-link">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick links column -->
+                <div class="footer-column">
+                    <h4 class="footer-heading">Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="markets.html">Markets</a></li>
+                        <li><a href="currencies.html">Currencies</a></li>
+                        <li><a href="trends.html">Trends</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources column -->
+                <div class="footer-column">
+                    <h4 class="footer-heading">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="news.html">Financial News</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="#">API Documentation</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact column -->
+                <div class="footer-column">
+                    <h4 class="footer-heading">Stay Updated</h4>
+                    <p class="footer-newsletter-text">Get market insights delivered to your inbox</p>
+                    <div class="newsletter-form">
+                        <input type="email" placeholder="Enter your email" class="newsletter-input">
+                        <button class="newsletter-button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom part of footer -->
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © 2024 StockPulse. Created by <strong>Eisa Abdul</strong> for Creative Computing Course
+                </p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <span class="footer-divider">|</span>
+                    <a href="#">Terms of Service</a>
+                    <span class="footer-divider">|</span>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="api.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
