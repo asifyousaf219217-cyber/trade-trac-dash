@@ -7,8 +7,9 @@
 import { getTimeAgo } from './api.js';
 
 // our supabase configuration
+// our supabase URL and API key from environment variables
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://artyddpgtnbkdyybponr.supabase.co';
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFydHlkZHBndG5ia2R5eWJwb25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzODQzNjIsImV4cCI6MjA3NTk2MDM2Mn0.S9L7zFmmbUzZVl8kBO9ld7x4ShJFUZvkbeg_W6VJnjM';
 
 // ============================================
 // INITIALIZATION - runs when page loads

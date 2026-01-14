@@ -1,1 +1,4 @@
 project_id = "artyddpgtnbkdyybponr"
+
+[functions.news-proxy]
+verify_jwt = false
