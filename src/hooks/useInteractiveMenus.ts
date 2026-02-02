@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useBusiness } from './useBusiness';
 import type { InteractiveMenu, MenuButton } from '@/types/bot-config';
+import type { MarketplaceBot } from '@/data/bot-templates';
 
 export function useInteractiveMenus() {
   const { data: business } = useBusiness();
@@ -15,7 +16,7 @@ export function useInteractiveMenus() {
         .from('interactive_menus')
         .select(`
           *,
-          buttons:menu_buttons(*)
+          buttons:menu_buttons!menu_buttons_menu_id_fkey(*)
         `)
         .eq('business_id', business.id)
         .order('created_at');
@@ -342,6 +343,112 @@ export function useApplyTemplateDefaults() {
           { business_id: business.id, step_order: 3, step_type: 'NAME', prompt_text: 'Your name:', validation_type: 'text', is_required: true, is_enabled: true },
         ]);
       }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['interactive_menus'] });
+      queryClient.invalidateQueries({ queryKey: ['booking_steps'] });
+    },
+  });
+}
+
+// Apply marketplace template
+export function useApplyMarketplaceTemplate() {
+  const queryClient = useQueryClient();
+  const { data: business } = useBusiness();
+
+  return useMutation({
+    mutationFn: async (marketplaceBot: MarketplaceBot) => {
+      if (!business?.id) throw new Error('No business found');
+
+      // Delete existing menus
+      const { data: existingMenus } = await supabase
+        .from('interactive_menus')
+        .select('id')
+        .eq('business_id', business.id);
+
+      if (existingMenus) {
+        for (const menu of existingMenus) {
+          await supabase.from('menu_buttons').delete().eq('menu_id', menu.id);
+        }
+        await supabase.from('interactive_menus').delete().eq('business_id', business.id);
+      }
+
+      // Delete existing steps
+      await supabase.from('booking_steps').delete().eq('business_id', business.id);
+
+      // Create menus from template
+      let menusCreated = 0;
+      const defaultMenus = (marketplaceBot as MarketplaceBot & { defaultMenus?: Array<{
+        menu_name: string;
+        message_text: string;
+        is_entry_point?: boolean;
+        buttons?: Array<{
+          button_order: number;
+          button_label: string;
+          button_id: string;
+          action_type: string;
+        }>;
+      }> }).defaultMenus;
+
+      if (defaultMenus) {
+        for (const menuConfig of defaultMenus) {
+          const { data: menu, error } = await supabase
+            .from('interactive_menus')
+            .insert({
+              business_id: business.id,
+              menu_name: menuConfig.menu_name,
+              message_text: menuConfig.message_text,
+              is_entry_point: menuConfig.is_entry_point || false,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          menusCreated++;
+
+          // Create buttons
+          if (menu && menuConfig.buttons) {
+            await supabase.from('menu_buttons').insert(
+              menuConfig.buttons.map(btn => ({
+                menu_id: menu.id,
+                button_order: btn.button_order,
+                button_label: btn.button_label,
+                button_id: btn.button_id,
+                action_type: btn.action_type,
+                next_menu_id: null,
+              }))
+            );
+          }
+        }
+      }
+
+      // Create steps from template
+      let stepsCreated = 0;
+      const defaultSteps = (marketplaceBot as MarketplaceBot & { defaultSteps?: Array<{
+        step_order: number;
+        step_type: string;
+        prompt_text: string;
+        validation_type?: string;
+        is_required?: boolean;
+        is_enabled?: boolean;
+      }> }).defaultSteps;
+
+      if (defaultSteps) {
+        await supabase.from('booking_steps').insert(
+          defaultSteps.map(step => ({
+            business_id: business.id,
+            step_order: step.step_order,
+            step_type: step.step_type,
+            prompt_text: step.prompt_text,
+            validation_type: step.validation_type || 'text',
+            is_required: step.is_required ?? true,
+            is_enabled: step.is_enabled ?? true,
+          }))
+        );
+        stepsCreated = defaultSteps.length;
+      }
+
+      return { menusCreated, stepsCreated };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interactive_menus'] });
