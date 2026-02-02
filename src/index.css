@@ -1,0 +1,229 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* WhatsApp-inspired green SaaS palette */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* WhatsApp green */
+    --primary: 142 70% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 142 60% 95%;
+    --accent-foreground: 142 70% 35%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 142 70% 45%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* WhatsApp Chat tokens */
+    --chat-inbound: 0 0% 94%;
+    --chat-inbound-foreground: 222 47% 11%;
+    --chat-outbound: 142 70% 85%;
+    --chat-outbound-foreground: 222 47% 11%;
+    --chat-agent: 210 100% 95%;
+    --chat-agent-foreground: 222 47% 11%;
+    --chat-chip-border: 142 70% 45%;
+    --chat-chip-bg: 0 0% 100%;
+
+    /* Conversation state colors */
+    --state-new: 215 16% 47%;
+    --state-menu: 199 89% 48%;
+    --state-booking: 280 70% 50%;
+    --state-confirm: 38 92% 50%;
+    --state-ordering: 174 84% 35%;
+    --state-faq: 199 89% 48%;
+    --state-human: 0 84% 60%;
+
+    /* Sidebar */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 142 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 40% 18%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 222 40% 18%;
+    --sidebar-ring: 142 70% 50%;
+    --sidebar-muted: 215 16% 60%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(142 70% 45%) 0%, hsl(142 70% 35%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(142 70% 45%) 0%, hsl(160 60% 40%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 20% 98%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 142 70% 50%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 222 40% 15%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 222 40% 15%;
+    --muted-foreground: 215 16% 60%;
+
+    --accent: 142 50% 15%;
+    --accent-foreground: 142 70% 60%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 222 40% 18%;
+    --input: 222 40% 18%;
+    --ring: 142 70% 50%;
+
+    --success: 142 76% 45%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 55%;
+
+    /* WhatsApp Chat tokens (dark mode) */
+    --chat-inbound: 222 40% 20%;
+    --chat-inbound-foreground: 210 20% 98%;
+    --chat-outbound: 142 50% 25%;
+    --chat-outbound-foreground: 210 20% 98%;
+    --chat-agent: 210 50% 25%;
+    --chat-agent-foreground: 210 20% 98%;
+    --chat-chip-border: 142 70% 50%;
+    --chat-chip-bg: 222 40% 15%;
+
+    /* Conversation state colors (dark mode) */
+    --state-new: 215 16% 60%;
+    --state-menu: 199 89% 55%;
+    --state-booking: 280 70% 60%;
+    --state-confirm: 38 92% 55%;
+    --state-ordering: 174 84% 45%;
+    --state-faq: 199 89% 55%;
+    --state-human: 0 70% 55%;
+
+    --sidebar-background: 222 47% 6%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-accent: 222 40% 12%;
+    --sidebar-border: 222 40% 12%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+@layer components {
+  .stat-card {
+    @apply rounded-xl border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md;
+  }
+
+  .chat-bubble-incoming {
+    @apply rounded-2xl rounded-tl-sm bg-secondary px-4 py-2 text-secondary-foreground;
+  }
+
+  .chat-bubble-outgoing {
+    @apply rounded-2xl rounded-tr-sm bg-primary px-4 py-2 text-primary-foreground;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200;
+  }
+
+  .sidebar-item-active {
+    @apply bg-sidebar-accent text-sidebar-primary;
+  }
+
+  .sidebar-item-inactive {
+    @apply text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground;
+  }
+
+  .page-header {
+    @apply mb-8;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold tracking-tight text-foreground;
+  }
+
+  .page-description {
+    @apply mt-1 text-muted-foreground;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+}
