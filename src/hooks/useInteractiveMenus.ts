@@ -271,7 +271,7 @@ export function useApplyTemplateDefaults() {
           .insert({
             business_id: business.id,
             menu_name: 'Main Menu',
-            message_text: 'Welcome! How can I help you today?',
+            message_text: 'Hi there! 💈 How can I help you today?',
             is_entry_point: true,
           })
           .select()
@@ -283,7 +283,7 @@ export function useApplyTemplateDefaults() {
           .insert({
             business_id: business.id,
             menu_name: 'Appointments',
-            message_text: 'What would you like to do?',
+            message_text: "Let's get you booked! What would you like to do?",
             is_entry_point: false,
           })
           .select()
@@ -299,18 +299,19 @@ export function useApplyTemplateDefaults() {
 
           // Appointments Sub-Menu buttons
           await supabase.from('menu_buttons').insert([
-            { menu_id: apptMenu.id, button_order: 1, button_label: '📅 Book', button_id: 'booking', action_type: 'START_BOOKING' },
-            { menu_id: apptMenu.id, button_order: 2, button_label: '❌ Cancel', button_id: 'cancel_appointment', action_type: 'CANCEL_APPOINTMENT' },
+            { menu_id: apptMenu.id, button_order: 1, button_label: '📅 Book Appointment', button_id: 'booking', action_type: 'START_BOOKING' },
+            { menu_id: apptMenu.id, button_order: 2, button_label: '❌ Cancel Appointment', button_id: 'cancel_appointment', action_type: 'CANCEL_APPOINTMENT' },
             { menu_id: apptMenu.id, button_order: 3, button_label: '⬅ Back', button_id: 'back_main', action_type: 'OPEN_MENU', next_menu_id: mainMenu.id },
           ]);
         }
 
-        // Enable appointments in bot_configs
+        // Enable appointments and update greeting in bot_configs
         await supabase
           .from('bot_configs')
           .upsert({
             business_id: business.id,
             appointment_enabled: true,
+            greeting_message: 'Welcome! 💈 Ready to book your next appointment?',
           }, { onConflict: 'business_id' });
 
         // Create booking steps
@@ -327,7 +328,7 @@ export function useApplyTemplateDefaults() {
           .insert({
             business_id: business.id,
             menu_name: 'Main Menu',
-            message_text: 'Welcome! What would you like to do?',
+            message_text: 'Hey! 🍕 Welcome to our restaurant! What can we do for you?',
             is_entry_point: true,
           })
           .select()
@@ -339,7 +340,7 @@ export function useApplyTemplateDefaults() {
           .insert({
             business_id: business.id,
             menu_name: 'Orders',
-            message_text: 'How can I help with your order?',
+            message_text: 'Ready to order? Here are your options:',
             is_entry_point: false,
           })
           .select()
@@ -361,12 +362,13 @@ export function useApplyTemplateDefaults() {
           ]);
         }
 
-        // Enable orders in bot_configs
+        // Enable orders and update greeting in bot_configs
         await supabase
           .from('bot_configs')
           .upsert({
             business_id: business.id,
             order_enabled: true,
+            greeting_message: 'Welcome! 🍔 What can we get started for you today?',
           }, { onConflict: 'business_id' });
 
         // Create order steps
@@ -381,7 +383,7 @@ export function useApplyTemplateDefaults() {
           .insert({
             business_id: business.id,
             menu_name: 'Main Menu',
-            message_text: 'Welcome! How can we help you today?',
+            message_text: 'Hello! 📚 Welcome to our learning center!',
             is_entry_point: true,
           })
           .select()
@@ -393,7 +395,7 @@ export function useApplyTemplateDefaults() {
           .insert({
             business_id: business.id,
             menu_name: 'Enrollment',
-            message_text: 'What would you like to do?',
+            message_text: "Interested in our classes? Here's what you can do:",
             is_entry_point: false,
           })
           .select()
@@ -409,18 +411,19 @@ export function useApplyTemplateDefaults() {
 
           // Enrollment Sub-Menu buttons
           await supabase.from('menu_buttons').insert([
-            { menu_id: enrollMenu.id, button_order: 1, button_label: '📚 Enroll', button_id: 'enroll', action_type: 'START_BOOKING' },
-            { menu_id: enrollMenu.id, button_order: 2, button_label: '❌ Cancel', button_id: 'cancel_enrollment', action_type: 'CANCEL_APPOINTMENT' },
+            { menu_id: enrollMenu.id, button_order: 1, button_label: '✏️ Enroll Now', button_id: 'enroll', action_type: 'START_BOOKING' },
+            { menu_id: enrollMenu.id, button_order: 2, button_label: '❌ Cancel Enrollment', button_id: 'cancel_enrollment', action_type: 'CANCEL_APPOINTMENT' },
             { menu_id: enrollMenu.id, button_order: 3, button_label: '⬅ Back', button_id: 'back_main', action_type: 'OPEN_MENU', next_menu_id: mainMenu.id },
           ]);
         }
 
-        // Enable appointments in bot_configs (for class bookings)
+        // Enable appointments and update greeting in bot_configs (for class bookings)
         await supabase
           .from('bot_configs')
           .upsert({
             business_id: business.id,
             appointment_enabled: true,
+            greeting_message: 'Welcome! 📚 Ready to enroll in a class?',
           }, { onConflict: 'business_id' });
 
         // Create enrollment steps
@@ -434,6 +437,7 @@ export function useApplyTemplateDefaults() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interactive_menus'] });
       queryClient.invalidateQueries({ queryKey: ['booking_steps'] });
+      queryClient.invalidateQueries({ queryKey: ['bot_config'] });
     },
   });
 }

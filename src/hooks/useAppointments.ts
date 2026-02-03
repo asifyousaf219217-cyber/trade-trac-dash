@@ -26,14 +26,18 @@ export function useAppointments() {
 
 export function useUpdateAppointmentStatus() {
   const queryClient = useQueryClient();
+  const { data: business } = useBusiness();
 
   return useMutation({
     mutationFn: async ({ appointmentId, status }: { appointmentId: string; status: AppointmentStatus }) => {
+      if (!business?.id) throw new Error('Business not found');
+
       const updateData: AppointmentUpdate = { status };
       const { data, error } = await supabase
         .from('appointments')
         .update(updateData)
         .eq('id', appointmentId)
+        .eq('business_id', business.id)
         .select()
         .single();
 
