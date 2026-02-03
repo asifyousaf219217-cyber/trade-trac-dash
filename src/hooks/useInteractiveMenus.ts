@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useBusiness } from './useBusiness';
 import type { InteractiveMenu, MenuButton } from '@/types/bot-config';
 import type { MarketplaceBot } from '@/data/bot-templates';
+import { TEMPLATE_REGISTRY, type TemplateDefinition } from '@/data/template-definitions';
 
 export function useInteractiveMenus() {
   const { data: business } = useBusiness();
@@ -238,203 +239,121 @@ export function useSetEntryPoint() {
   });
 }
 
-// Apply template defaults
+// Apply template defaults - COMPLETE TEMPLATE ISOLATION
 export function useApplyTemplateDefaults() {
   const queryClient = useQueryClient();
   const { data: business } = useBusiness();
 
   return useMutation({
-    mutationFn: async (template: 'appointment' | 'order' | 'class_booking') => {
+    mutationFn: async (templateId: string) => {
       if (!business?.id) throw new Error('No business found');
+      
+      const template = TEMPLATE_REGISTRY[templateId];
+      if (!template) throw new Error(`Unknown template: ${templateId}`);
 
-      // Delete existing menus and buttons
+      // ══════════════════════════════════════════════════════════
+      // STEP 1: DELETE ALL EXISTING DATA (Full Reset)
+      // ══════════════════════════════════════════════════════════
+      
+      // Delete menu buttons first (foreign key constraint)
       const { data: existingMenus } = await supabase
         .from('interactive_menus')
         .select('id')
         .eq('business_id', business.id);
-
+      
       if (existingMenus) {
         for (const menu of existingMenus) {
           await supabase.from('menu_buttons').delete().eq('menu_id', menu.id);
         }
-        await supabase.from('interactive_menus').delete().eq('business_id', business.id);
       }
-
-      // Delete existing booking steps
+      
+      // Delete menus
+      await supabase.from('interactive_menus').delete().eq('business_id', business.id);
+      
+      // Delete booking steps
       await supabase.from('booking_steps').delete().eq('business_id', business.id);
 
-      // Create template-specific menus
-      if (template === 'appointment') {
-        // Create Main Menu
-        const { data: mainMenu } = await supabase
+      // ══════════════════════════════════════════════════════════
+      // STEP 2: UPDATE BOT CONFIG (All fields from template)
+      // ══════════════════════════════════════════════════════════
+      
+      await supabase
+        .from('bot_configs')
+        .upsert({
+          business_id: business.id,
+          greeting_message: template.greeting_message,
+          fallback_message: template.fallback_message,
+          unknown_message_help: template.unknown_message_help,
+          appointment_enabled: template.appointment_enabled,
+          order_enabled: template.order_enabled,
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'business_id' });
+
+      // ══════════════════════════════════════════════════════════
+      // STEP 3: CREATE MENUS (with proper linking)
+      // ══════════════════════════════════════════════════════════
+      
+      const menuIdMap: Record<string, string> = {};
+      
+      // First pass: create all menus
+      for (const menuDef of template.menus) {
+        const { data: menu } = await supabase
           .from('interactive_menus')
           .insert({
             business_id: business.id,
-            menu_name: 'Main Menu',
-            message_text: 'Hi there! 💈 How can I help you today?',
-            is_entry_point: true,
+            menu_name: menuDef.menu_name,
+            message_text: menuDef.message_text,
+            is_entry_point: menuDef.is_entry_point,
           })
           .select()
           .single();
-
-        // Create Appointments Sub-Menu
-        const { data: apptMenu } = await supabase
-          .from('interactive_menus')
-          .insert({
-            business_id: business.id,
-            menu_name: 'Appointments',
-            message_text: "Let's get you booked! What would you like to do?",
-            is_entry_point: false,
-          })
-          .select()
-          .single();
-
-        if (mainMenu && apptMenu) {
-          // Main Menu buttons
-          await supabase.from('menu_buttons').insert([
-            { menu_id: mainMenu.id, button_order: 1, button_label: '📅 Appointments', button_id: 'appointments', action_type: 'OPEN_MENU', next_menu_id: apptMenu.id },
-            { menu_id: mainMenu.id, button_order: 2, button_label: '❓ FAQ', button_id: 'faq', action_type: 'FAQ' },
-            { menu_id: mainMenu.id, button_order: 3, button_label: '💬 Support', button_id: 'human', action_type: 'HUMAN' },
-          ]);
-
-          // Appointments Sub-Menu buttons
-          await supabase.from('menu_buttons').insert([
-            { menu_id: apptMenu.id, button_order: 1, button_label: '📅 Book Appointment', button_id: 'booking', action_type: 'START_BOOKING' },
-            { menu_id: apptMenu.id, button_order: 2, button_label: '❌ Cancel Appointment', button_id: 'cancel_appointment', action_type: 'CANCEL_APPOINTMENT' },
-            { menu_id: apptMenu.id, button_order: 3, button_label: '⬅ Back', button_id: 'back_main', action_type: 'OPEN_MENU', next_menu_id: mainMenu.id },
-          ]);
+        
+        if (menu) {
+          menuIdMap[menuDef.menu_name] = menu.id;
         }
-
-        // Enable appointments and update greeting in bot_configs
-        await supabase
-          .from('bot_configs')
-          .upsert({
-            business_id: business.id,
-            appointment_enabled: true,
-            greeting_message: 'Welcome! 💈 Ready to book your next appointment?',
-          }, { onConflict: 'business_id' });
-
-        // Create booking steps
-        await supabase.from('booking_steps').insert([
-          { business_id: business.id, step_order: 1, step_type: 'SERVICE', prompt_text: 'What service would you like to book?', validation_type: 'service_match', is_required: true, is_enabled: true },
-          { business_id: business.id, step_order: 2, step_type: 'DATETIME', prompt_text: 'What date and time work for you?', validation_type: 'datetime', is_required: true, is_enabled: true },
-          { business_id: business.id, step_order: 3, step_type: 'NAME', prompt_text: 'What is your name?', validation_type: 'text', is_required: true, is_enabled: true },
-        ]);
-
-      } else if (template === 'order') {
-        // Create Main Menu
-        const { data: mainMenu } = await supabase
-          .from('interactive_menus')
-          .insert({
-            business_id: business.id,
-            menu_name: 'Main Menu',
-            message_text: 'Hey! 🍕 Welcome to our restaurant! What can we do for you?',
-            is_entry_point: true,
-          })
-          .select()
-          .single();
-
-        // Create Orders Sub-Menu
-        const { data: ordersMenu } = await supabase
-          .from('interactive_menus')
-          .insert({
-            business_id: business.id,
-            menu_name: 'Orders',
-            message_text: 'Ready to order? Here are your options:',
-            is_entry_point: false,
-          })
-          .select()
-          .single();
-
-        if (mainMenu && ordersMenu) {
-          // Main Menu buttons
-          await supabase.from('menu_buttons').insert([
-            { menu_id: mainMenu.id, button_order: 1, button_label: '🛒 Orders', button_id: 'orders', action_type: 'OPEN_MENU', next_menu_id: ordersMenu.id },
-            { menu_id: mainMenu.id, button_order: 2, button_label: '📋 View Menu', button_id: 'menu', action_type: 'FAQ' },
-            { menu_id: mainMenu.id, button_order: 3, button_label: '💬 Support', button_id: 'human', action_type: 'HUMAN' },
-          ]);
-
-          // Orders Sub-Menu buttons
-          await supabase.from('menu_buttons').insert([
-            { menu_id: ordersMenu.id, button_order: 1, button_label: '🛒 Place Order', button_id: 'order', action_type: 'START_ORDER' },
-            { menu_id: ordersMenu.id, button_order: 2, button_label: '❌ Cancel Order', button_id: 'cancel_order', action_type: 'CANCEL_ORDER' },
-            { menu_id: ordersMenu.id, button_order: 3, button_label: '⬅ Back', button_id: 'back_main', action_type: 'OPEN_MENU', next_menu_id: mainMenu.id },
-          ]);
-        }
-
-        // Enable orders and update greeting in bot_configs
-        await supabase
-          .from('bot_configs')
-          .upsert({
-            business_id: business.id,
-            order_enabled: true,
-            greeting_message: 'Welcome! 🍔 What can we get started for you today?',
-          }, { onConflict: 'business_id' });
-
-        // Create order steps
-        await supabase.from('booking_steps').insert([
-          { business_id: business.id, step_order: 1, step_type: 'CUSTOM', prompt_text: 'What would you like to order?', validation_type: 'text', is_required: true, is_enabled: true },
-        ]);
-
-      } else if (template === 'class_booking') {
-        // Create Main Menu
-        const { data: mainMenu } = await supabase
-          .from('interactive_menus')
-          .insert({
-            business_id: business.id,
-            menu_name: 'Main Menu',
-            message_text: 'Hello! 📚 Welcome to our learning center!',
-            is_entry_point: true,
-          })
-          .select()
-          .single();
-
-        // Create Enrollment Sub-Menu
-        const { data: enrollMenu } = await supabase
-          .from('interactive_menus')
-          .insert({
-            business_id: business.id,
-            menu_name: 'Enrollment',
-            message_text: "Interested in our classes? Here's what you can do:",
-            is_entry_point: false,
-          })
-          .select()
-          .single();
-
-        if (mainMenu && enrollMenu) {
-          // Main Menu buttons
-          await supabase.from('menu_buttons').insert([
-            { menu_id: mainMenu.id, button_order: 1, button_label: '📚 Classes', button_id: 'classes', action_type: 'OPEN_MENU', next_menu_id: enrollMenu.id },
-            { menu_id: mainMenu.id, button_order: 2, button_label: '📅 Schedule', button_id: 'schedule', action_type: 'FAQ' },
-            { menu_id: mainMenu.id, button_order: 3, button_label: '💬 Support', button_id: 'human', action_type: 'HUMAN' },
-          ]);
-
-          // Enrollment Sub-Menu buttons
-          await supabase.from('menu_buttons').insert([
-            { menu_id: enrollMenu.id, button_order: 1, button_label: '✏️ Enroll Now', button_id: 'enroll', action_type: 'START_BOOKING' },
-            { menu_id: enrollMenu.id, button_order: 2, button_label: '❌ Cancel Enrollment', button_id: 'cancel_enrollment', action_type: 'CANCEL_APPOINTMENT' },
-            { menu_id: enrollMenu.id, button_order: 3, button_label: '⬅ Back', button_id: 'back_main', action_type: 'OPEN_MENU', next_menu_id: mainMenu.id },
-          ]);
-        }
-
-        // Enable appointments and update greeting in bot_configs (for class bookings)
-        await supabase
-          .from('bot_configs')
-          .upsert({
-            business_id: business.id,
-            appointment_enabled: true,
-            greeting_message: 'Welcome! 📚 Ready to enroll in a class?',
-          }, { onConflict: 'business_id' });
-
-        // Create enrollment steps
-        await supabase.from('booking_steps').insert([
-          { business_id: business.id, step_order: 1, step_type: 'CUSTOM', prompt_text: 'Which class would you like to enroll in?', validation_type: 'text', is_required: true, is_enabled: true },
-          { business_id: business.id, step_order: 2, step_type: 'DATETIME', prompt_text: 'Select your preferred date:', validation_type: 'datetime', is_required: true, is_enabled: true },
-          { business_id: business.id, step_order: 3, step_type: 'NAME', prompt_text: 'Your name:', validation_type: 'text', is_required: true, is_enabled: true },
-        ]);
       }
+      
+      // Second pass: create buttons with proper next_menu_id links
+      for (const menuDef of template.menus) {
+        const menuId = menuIdMap[menuDef.menu_name];
+        if (!menuId) continue;
+        
+        const buttons = menuDef.buttons.map(btn => ({
+          menu_id: menuId,
+          button_order: btn.button_order,
+          button_label: btn.button_label,
+          button_id: btn.button_id,
+          action_type: btn.action_type,
+          next_menu_id: btn.links_to_menu ? menuIdMap[btn.links_to_menu] : null,
+        }));
+        
+        await supabase.from('menu_buttons').insert(buttons);
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // STEP 4: CREATE BOOKING STEPS (if appointment-based)
+      // ══════════════════════════════════════════════════════════
+      
+      if (template.booking_steps && template.booking_steps.length > 0) {
+        const steps = template.booking_steps.map(step => ({
+          business_id: business.id,
+          step_order: step.step_order,
+          step_type: step.step_type,
+          prompt_text: step.prompt_text,
+          validation_type: step.validation_type,
+          is_required: true,
+          is_enabled: true,
+        }));
+        
+        await supabase.from('booking_steps').insert(steps);
+      }
+
+      return { templateId, success: true };
     },
+    
     onSuccess: () => {
+      // Invalidate ALL relevant queries
       queryClient.invalidateQueries({ queryKey: ['interactive_menus'] });
       queryClient.invalidateQueries({ queryKey: ['booking_steps'] });
       queryClient.invalidateQueries({ queryKey: ['bot_config'] });
