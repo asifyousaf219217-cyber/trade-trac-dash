@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { RotateCcw, MessageSquare, User, ChevronLeft } from 'lucide-react';
+import { RotateCcw, MessageSquare, User, ChevronLeft, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { InteractiveMenu, MenuButton, BookingStep } from '@/types/bot-config';
 import { ACTION_TYPE_LABELS } from '@/types/bot-config';
 
@@ -50,6 +51,40 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName }:
   const currentStep = state?.type === 'booking' && bookingSteps[state.stepIndex]
     ? bookingSteps[state.stepIndex]
     : null;
+
+  // Validate template consistency
+  const validateTemplateConsistency = (): string | null => {
+    if (!templateName) return null;
+    
+    const isOrderTemplate = templateName.toLowerCase().includes('restaurant') || 
+                            templateName.toLowerCase().includes('food') ||
+                            templateName.toLowerCase().includes('order');
+    const isAppointmentTemplate = templateName.toLowerCase().includes('salon') || 
+                                   templateName.toLowerCase().includes('clinic') ||
+                                   templateName.toLowerCase().includes('gym') ||
+                                   templateName.toLowerCase().includes('auto') ||
+                                   templateName.toLowerCase().includes('school');
+    
+    // Check for mismatches
+    const hasBookingButtons = menus.some(m => 
+      m.buttons?.some(b => b.action_type === 'START_BOOKING')
+    );
+    const hasOrderButtons = menus.some(m => 
+      m.buttons?.some(b => b.action_type === 'START_ORDER')
+    );
+    
+    if (isOrderTemplate && hasBookingButtons && bookingSteps.length > 0) {
+      return "Order template has appointment steps. Please reapply template.";
+    }
+    
+    if (isAppointmentTemplate && hasOrderButtons) {
+      return "Appointment template has order buttons. Please reapply template.";
+    }
+    
+    return null;
+  };
+
+  const templateWarning = validateTemplateConsistency();
 
   const handleButtonClick = (button: MenuButton) => {
     // Add user "click" to messages
@@ -211,6 +246,16 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName }:
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Template mismatch warning */}
+        {templateWarning && (
+          <Alert variant="destructive" className="mb-3">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              {templateWarning}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* WhatsApp-style chat container */}
         <div className="bg-[#e5ddd5] dark:bg-zinc-800 rounded-lg p-3 min-h-[400px] max-h-[500px] overflow-y-auto space-y-3">
           {/* Initial greeting */}
@@ -299,7 +344,7 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName }:
           {!entryMenu && menus.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               <p className="text-sm">No menus configured</p>
-              <p className="text-xs mt-1">Create a menu to see the preview</p>
+              <p className="text-xs mt-1">Select a template above to get started</p>
             </div>
           )}
         </div>

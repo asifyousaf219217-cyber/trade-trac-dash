@@ -1,37 +1,17 @@
 import { useState } from 'react';
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useApplyTemplateDefaults } from '@/hooks/useInteractiveMenus';
+import { getAllTemplates, getTemplateById, type TemplateDefinition } from '@/data/template-definitions';
 import { toast } from '@/hooks/use-toast';
-import type { TemplateType } from '@/types/bot-config';
 
 interface TemplateConfigPanelProps {
-  selectedTemplate: TemplateType;
-  onTemplateChange: (template: TemplateType) => void;
+  selectedTemplate: string | null;
+  onTemplateChange: (templateId: string) => void;
   hasExistingData?: boolean;
 }
-
-const TEMPLATE_INFO: Record<TemplateType, { name: string; icon: string; description: string }> = {
-  appointment: {
-    name: 'Appointment Booking',
-    icon: '📅',
-    description: 'Perfect for salons, clinics, and service businesses. Includes booking, cancellation, and FAQ buttons.',
-  },
-  order: {
-    name: 'Order Collection',
-    icon: '🛒',
-    description: 'Ideal for restaurants and retail. Customers can place orders and view menu.',
-  },
-  class_booking: {
-    name: 'Class Enrollment',
-    icon: '📚',
-    description: 'Great for schools and training centers. Students can enroll in classes.',
-  },
-};
 
 export function TemplateConfigPanel({ 
   selectedTemplate, 
@@ -40,17 +20,20 @@ export function TemplateConfigPanel({
 }: TemplateConfigPanelProps) {
   const applyDefaults = useApplyTemplateDefaults();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingTemplate, setPendingTemplate] = useState<TemplateType | null>(null);
+  const [pendingTemplate, setPendingTemplate] = useState<string | null>(null);
+  
+  const templates = getAllTemplates();
 
-  const handleApplyDefaults = async (template: TemplateType) => {
+  const handleApplyTemplate = async (templateId: string) => {
     try {
-      await applyDefaults.mutateAsync(template);
-      onTemplateChange(template);
+      await applyDefaults.mutateAsync(templateId);
+      onTemplateChange(templateId);
       toast({ 
-        title: 'Template applied!', 
-        description: 'Default menus and booking steps have been created.',
+        title: '✅ Template Applied!', 
+        description: 'All menus, greetings, and settings have been updated.',
       });
     } catch (error) {
+      console.error('Failed to apply template:', error);
       toast({ 
         title: 'Failed to apply template', 
         variant: 'destructive',
@@ -60,59 +43,73 @@ export function TemplateConfigPanel({
     setPendingTemplate(null);
   };
 
-  const handleTemplateSelect = (template: TemplateType) => {
+  const handleTemplateSelect = (templateId: string) => {
     if (hasExistingData) {
-      setPendingTemplate(template);
+      setPendingTemplate(templateId);
       setShowConfirmDialog(true);
     } else {
-      handleApplyDefaults(template);
+      handleApplyTemplate(templateId);
     }
   };
+
+  const selectedDef = selectedTemplate ? getTemplateById(selectedTemplate) : null;
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wand2 className="h-5 w-5" />
-            Quick Start Template
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5" />
+              Bot Template
+            </CardTitle>
+            {selectedDef && (
+              <Badge variant="secondary" className="text-sm">
+                {selectedDef.icon} {selectedDef.label}
+              </Badge>
+            )}
+          </div>
           <CardDescription>
-            Choose a template to auto-configure menus and booking steps
+            Choose a template to configure your entire bot. 
+            <span className="font-medium text-foreground"> All settings will be updated.</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {(Object.entries(TEMPLATE_INFO) as [TemplateType, typeof TEMPLATE_INFO[TemplateType]][]).map(([key, info]) => (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {templates.map((template) => (
               <button
-                key={key}
-                onClick={() => handleTemplateSelect(key)}
+                key={template.id}
+                onClick={() => handleTemplateSelect(template.id)}
                 disabled={applyDefaults.isPending}
-                className={`p-4 rounded-lg border-2 text-left transition-all hover:border-primary ${
-                  selectedTemplate === key 
+                className={`p-4 rounded-lg border-2 text-left transition-all hover:border-primary relative ${
+                  selectedTemplate === template.id 
                     ? 'border-primary bg-primary/5' 
                     : 'border-muted hover:bg-muted/50'
                 }`}
               >
-                <div className="text-2xl mb-2">{info.icon}</div>
-                <div className="font-medium text-sm">{info.name}</div>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                  {info.description}
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-2xl">{template.icon}</span>
+                  {selectedTemplate === template.id && (
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                  )}
+                </div>
+                <div className="font-medium text-sm">{template.label}</div>
+                <Badge variant="outline" className="mt-2 text-xs">
+                  {template.industry === 'order' ? '🛒 Orders' : '📅 Appointments'}
+                </Badge>
               </button>
             ))}
           </div>
 
           {applyDefaults.isPending && (
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               Applying template...
             </div>
           )}
 
           <p className="text-xs text-muted-foreground text-center">
-            Selecting a template will create default menus and booking steps.
-            {hasExistingData && ' Existing configuration will be replaced.'}
+            Selecting a template updates greeting, menus, booking steps, and all bot settings.
           </p>
         </CardContent>
       </Card>
@@ -120,15 +117,24 @@ export function TemplateConfigPanel({
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Apply Template?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will replace your existing interactive menus and booking steps with the template defaults. Your FAQ and other settings will be preserved.
+            <AlertDialogTitle>⚠️ Replace All Settings?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>This will completely replace your current configuration:</p>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Greeting message</li>
+                  <li>All interactive menus</li>
+                  <li>Booking/order flow steps</li>
+                  <li>Fallback messages</li>
+                </ul>
+                <p className="font-medium text-destructive">This cannot be undone.</p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setPendingTemplate(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={() => pendingTemplate && handleApplyDefaults(pendingTemplate)}
+              onClick={() => pendingTemplate && handleApplyTemplate(pendingTemplate)}
               disabled={applyDefaults.isPending}
             >
               {applyDefaults.isPending ? (
@@ -137,7 +143,7 @@ export function TemplateConfigPanel({
                   Applying...
                 </>
               ) : (
-                'Apply Template'
+                'Replace Everything'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

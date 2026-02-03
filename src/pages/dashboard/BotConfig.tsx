@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useBotConfig, useUpdateBotConfig, parseStaticRepliesToUI, convertToStaticReplies } from "@/hooks/useBotConfig";
 import { useBusiness } from "@/hooks/useBusiness";
@@ -13,12 +14,12 @@ import { useInteractiveMenus } from "@/hooks/useInteractiveMenus";
 import { useBookingSteps } from "@/hooks/useBookingSteps";
 import { toast } from "@/hooks/use-toast";
 import { FAQManager } from "@/components/bot-config/FAQManager";
-import { TemplateSelector } from "@/components/bot-config/TemplateSelector";
 import { InteractiveMenuBuilder } from "@/components/bot-config/InteractiveMenuBuilder";
 import { BookingStepBuilder } from "@/components/bot-config/BookingStepBuilder";
 import { TemplateConfigPanel } from "@/components/bot-config/TemplateConfigPanel";
 import { WhatsAppPreview } from "@/components/bot-config/WhatsAppPreview";
-import type { FAQ, BotConfigFormData, AppointmentPrompts, OrderPrompts, TemplateType } from "@/types/bot-config";
+import { getTemplateById, getTemplateLabel } from "@/data/template-definitions";
+import type { FAQ, BotConfigFormData, AppointmentPrompts, OrderPrompts } from "@/types/bot-config";
 
 const DEFAULT_CONFIG: BotConfigFormData = {
   greeting: "Welcome to our business! How can I help you today?",
@@ -61,6 +62,10 @@ export default function BotConfig() {
   const updateBotConfig = useUpdateBotConfig();
 
   const [config, setConfig] = useState<BotConfigFormData>(DEFAULT_CONFIG);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+
+  // Get template definition for conditional rendering
+  const activeTemplate = activeTemplateId ? getTemplateById(activeTemplateId) : null;
 
   // Load data from Supabase when botConfig is available
   useEffect(() => {
@@ -140,6 +145,12 @@ export default function BotConfig() {
     setConfig(prev => ({ ...prev, faqs }));
   };
 
+  const handleTemplateChange = (templateId: string) => {
+    setActiveTemplateId(templateId);
+    // The template will also update appointment_enabled/order_enabled via the hook
+    // which will then sync via useEffect when botConfig updates
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -147,6 +158,11 @@ export default function BotConfig() {
       </div>
     );
   }
+
+  // Determine which sections to show based on active template
+  const showAppointmentSection = !activeTemplate || activeTemplate.industry === 'appointment';
+  const showOrderSection = !activeTemplate || activeTemplate.industry === 'order';
+  const showBookingSteps = config.appointmentEnabled || config.orderEnabled;
 
   return (
     <div className="animate-fade-in">
@@ -172,12 +188,10 @@ export default function BotConfig() {
         <div className="space-y-6 lg:col-span-2">
           {/* Quick Start Template */}
           <TemplateConfigPanel
-            selectedTemplate={config.selectedTemplate}
-            onTemplateChange={(template) => updateConfig({ selectedTemplate: template })}
+            selectedTemplate={activeTemplateId}
+            onTemplateChange={handleTemplateChange}
             hasExistingData={menus.length > 0 || bookingSteps.length > 0}
           />
-
-          {/* Note: FAQ templates are included in the Quick Start templates above */}
 
           {/* Bot Status */}
           <Card>
@@ -317,13 +331,18 @@ export default function BotConfig() {
           <InteractiveMenuBuilder />
 
           {/* Booking Steps - show when appointments OR orders are enabled */}
-          {(config.appointmentEnabled || config.orderEnabled) && <BookingStepBuilder />}
+          {showBookingSteps && <BookingStepBuilder />}
 
           {/* Appointment Bot Configuration */}
-          <Card>
+          <Card className={!showAppointmentSection ? 'opacity-60' : ''}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span>📅</span> Appointment Bot
+                {activeTemplate?.industry === 'order' && (
+                  <Badge variant="secondary" className="text-xs">
+                    Disabled for {activeTemplate.label}
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription>Enable appointment booking via WhatsApp</CardDescription>
             </CardHeader>
@@ -338,22 +357,32 @@ export default function BotConfig() {
                 <Switch
                   checked={config.appointmentEnabled}
                   onCheckedChange={(appointmentEnabled) => updateConfig({ appointmentEnabled })}
+                  disabled={activeTemplate?.industry === 'order'}
                 />
               </div>
 
               {config.appointmentEnabled && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  ✓ Enabled. Configure the questions your bot asks during booking in the <strong>'Booking Steps'</strong> section below.
-                </p>
+                <div className="rounded-md bg-muted/50 p-3 border">
+                  <p className="text-sm font-medium text-foreground">✅ Appointments Active</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Customers reach this flow when they tap 📅 Book Appointment.
+                    Configure the questions in the <strong>Booking Steps</strong> section above.
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
 
           {/* Order Bot Configuration */}
-          <Card>
+          <Card className={!showOrderSection ? 'opacity-60' : ''}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span>🛒</span> Order Bot
+                {activeTemplate?.industry === 'appointment' && (
+                  <Badge variant="secondary" className="text-xs">
+                    Disabled for {activeTemplate.label}
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription>Enable order collection via WhatsApp</CardDescription>
             </CardHeader>
@@ -368,13 +397,18 @@ export default function BotConfig() {
                 <Switch
                   checked={config.orderEnabled}
                   onCheckedChange={(orderEnabled) => updateConfig({ orderEnabled })}
+                  disabled={activeTemplate?.industry === 'appointment'}
                 />
               </div>
 
               {config.orderEnabled && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  ✓ Enabled. Configure the questions your bot asks during ordering in the <strong>'Booking Steps'</strong> section below.
-                </p>
+                <div className="rounded-md bg-muted/50 p-3 border">
+                  <p className="text-sm font-medium text-foreground">✅ Orders Active</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Customers reach this flow when they tap 🛒 Place Order.
+                    Orders work through the interactive menu buttons.
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -397,9 +431,7 @@ export default function BotConfig() {
             menus={menus}
             bookingSteps={bookingSteps}
             greeting={config.greeting}
-            templateName={config.selectedTemplate === 'appointment' ? 'Appointment Booking' : 
-                         config.selectedTemplate === 'order' ? 'Order Collection' : 
-                         config.selectedTemplate === 'class_booking' ? 'Class Enrollment' : undefined}
+            templateName={activeTemplateId ? getTemplateLabel(activeTemplateId) : undefined}
           />
         </div>
       </div>
