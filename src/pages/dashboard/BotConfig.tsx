@@ -343,7 +343,7 @@ export default function BotConfig() {
 
               {config.appointmentEnabled && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  ✓ Enabled. Use <strong>Booking Flow</strong> below to customize the conversation steps.
+                  ✓ Enabled. Configure the questions your bot asks during booking in the <strong>'Booking Steps'</strong> section below.
                 </p>
               )}
             </CardContent>
@@ -373,7 +373,7 @@ export default function BotConfig() {
 
               {config.orderEnabled && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  ✓ Enabled. Use <strong>Booking Flow</strong> below to customize the order collection steps.
+                  ✓ Enabled. Configure the questions your bot asks during ordering in the <strong>'Booking Steps'</strong> section below.
                 </p>
               )}
             </CardContent>
@@ -397,6 +397,9 @@ export default function BotConfig() {
             menus={menus}
             bookingSteps={bookingSteps}
             greeting={config.greeting}
+            templateName={config.selectedTemplate === 'appointment' ? 'Appointment Booking' : 
+                         config.selectedTemplate === 'order' ? 'Order Collection' : 
+                         config.selectedTemplate === 'class_booking' ? 'Class Enrollment' : undefined}
           />
         </div>
       </div>

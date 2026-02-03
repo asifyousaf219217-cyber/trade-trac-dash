@@ -9,10 +9,13 @@ export function useToggleBotStatus() {
 
   return useMutation({
     mutationFn: async ({ conversationId, botEnabled }: { conversationId: string; botEnabled: boolean }) => {
+      if (!business?.id) throw new Error('Business not found');
+
       const { error } = await supabase
         .from('conversations')
         .update({ bot_enabled: botEnabled })
-        .eq('id', conversationId);
+        .eq('id', conversationId)
+        .eq('business_id', business.id);
 
       if (error) throw error;
       return { conversationId, botEnabled };
@@ -20,7 +23,7 @@ export function useToggleBotStatus() {
     onSuccess: (data) => {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['conversations', business?.id] });
-      queryClient.invalidateQueries({ queryKey: ['conversation', data.conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['conversation', data.conversationId, business?.id] });
       
       toast.success(data.botEnabled ? 'Bot enabled for this conversation' : 'Human takeover activated');
     },

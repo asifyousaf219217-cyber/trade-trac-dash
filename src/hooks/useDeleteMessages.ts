@@ -1,16 +1,21 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useBusiness } from './useBusiness';
 import { toast } from '@/hooks/use-toast';
 
 export function useDeleteMessage() {
   const queryClient = useQueryClient();
+  const { data: business } = useBusiness();
 
   return useMutation({
     mutationFn: async (messageId: string) => {
+      if (!business?.id) throw new Error('Business not found');
+
       const { error } = await supabase
         .from('messages')
         .delete()
-        .eq('id', messageId);
+        .eq('id', messageId)
+        .eq('business_id', business.id);
 
       if (error) throw error;
       return messageId;
@@ -35,13 +40,17 @@ export function useDeleteMessage() {
 
 export function useDeleteConversationMessages() {
   const queryClient = useQueryClient();
+  const { data: business } = useBusiness();
 
   return useMutation({
     mutationFn: async (conversationId: string) => {
+      if (!business?.id) throw new Error('Business not found');
+
       const { error } = await supabase
         .from('messages')
         .delete()
-        .eq('conversation_id', conversationId);
+        .eq('conversation_id', conversationId)
+        .eq('business_id', business.id);
 
       if (error) throw error;
       return conversationId;

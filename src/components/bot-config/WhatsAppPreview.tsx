@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { RotateCcw, MessageSquare, User, ChevronLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ interface WhatsAppPreviewProps {
   menus: InteractiveMenu[];
   bookingSteps: BookingStep[];
   greeting: string;
+  templateName?: string;
 }
 
 type PreviewState = 
@@ -23,13 +24,24 @@ interface ChatMessage {
   buttons?: MenuButton[];
 }
 
-export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPreviewProps) {
-  const entryMenu = menus.find(m => m.is_entry_point) || menus[0];
-  const [state, setState] = useState<PreviewState | null>(
-    entryMenu ? { type: 'menu', menuId: entryMenu.id } : null
-  );
+export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName }: WhatsAppPreviewProps) {
+  const [state, setState] = useState<PreviewState | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [menuHistory, setMenuHistory] = useState<string[]>([]);
+
+  // Reset preview when menus or greeting change
+  useEffect(() => {
+    const newEntryMenu = menus.find(m => m.is_entry_point) || menus[0];
+    setMessages([]);
+    setMenuHistory([]);
+    if (newEntryMenu) {
+      setState({ type: 'menu', menuId: newEntryMenu.id });
+    } else {
+      setState(null);
+    }
+  }, [menus, greeting]);
+
+  const entryMenu = menus.find(m => m.is_entry_point) || menus[0];
 
   const currentMenu = state?.type === 'menu' 
     ? menus.find(m => m.id === state.menuId) 
@@ -193,8 +205,9 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPrevi
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
-        <CardDescription className="text-xs">
-          Click buttons to simulate the customer flow
+        <CardDescription className="text-xs flex items-center gap-2">
+          <span>Previewing:</span>
+          <Badge variant="outline">{templateName || 'Custom Bot'}</Badge>
         </CardDescription>
       </CardHeader>
       <CardContent>

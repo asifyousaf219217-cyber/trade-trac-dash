@@ -130,19 +130,20 @@ export function useConversation(conversationId: string | null) {
   const { data: business } = useBusiness();
 
   return useQuery({
-    queryKey: ['conversation', conversationId],
+    queryKey: ['conversation', conversationId, business?.id],
     queryFn: async () => {
-      if (!conversationId) return null;
+      if (!conversationId || !business?.id) return null;
 
       const { data, error } = await supabase
         .from('conversations')
         .select('*')
         .eq('id', conversationId)
+        .eq('business_id', business.id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!conversationId && !!business,
+    enabled: !!conversationId && !!business?.id,
   });
 }

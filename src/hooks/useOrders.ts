@@ -26,14 +26,18 @@ export function useOrders() {
 
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
+  const { data: business } = useBusiness();
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: OrderStatus }) => {
+      if (!business?.id) throw new Error('Business not found');
+
       const updateData: OrderUpdate = { status };
       const { data, error } = await supabase
         .from('orders')
         .update(updateData)
         .eq('id', orderId)
+        .eq('business_id', business.id)
         .select()
         .single();
 
