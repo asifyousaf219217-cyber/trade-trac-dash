@@ -316,8 +316,8 @@ export default function BotConfig() {
           {/* Interactive Menus */}
           <InteractiveMenuBuilder />
 
-          {/* Booking Steps */}
-          {config.appointmentEnabled && <BookingStepBuilder />}
+          {/* Booking Steps - show when appointments OR orders are enabled */}
+          {(config.appointmentEnabled || config.orderEnabled) && <BookingStepBuilder />}
 
           {/* Appointment Bot Configuration */}
           <Card>
@@ -325,14 +325,14 @@ export default function BotConfig() {
               <CardTitle className="flex items-center gap-2">
                 <span>📅</span> Appointment Bot
               </CardTitle>
-              <CardDescription>Configure appointment booking via WhatsApp</CardDescription>
+              <CardDescription>Enable appointment booking via WhatsApp</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-base">Enable Appointment Booking</Label>
                   <p className="text-sm text-muted-foreground">
-                    Allow customers to book appointments via WhatsApp
+                    Allow customers to book and cancel appointments via WhatsApp
                   </p>
                 </div>
                 <Switch
@@ -342,86 +342,9 @@ export default function BotConfig() {
               </div>
 
               {config.appointmentEnabled && (
-                <div className="space-y-4 mt-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="space-y-2">
-                    <Label htmlFor="service_prompt">Service Prompt</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Ask customer what service they want
-                    </p>
-                    <Textarea
-                      id="service_prompt"
-                      value={config.appointmentPrompts.service_prompt || ''}
-                      onChange={(e) => updateConfig({
-                        appointmentPrompts: { ...config.appointmentPrompts, service_prompt: e.target.value }
-                      })}
-                      placeholder="What service would you like to book?"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="datetime_prompt">Date/Time Prompt</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Ask for appointment date and time
-                    </p>
-                    <Textarea
-                      id="datetime_prompt"
-                      value={config.appointmentPrompts.datetime_prompt || ''}
-                      onChange={(e) => updateConfig({
-                        appointmentPrompts: { ...config.appointmentPrompts, datetime_prompt: e.target.value }
-                      })}
-                      placeholder="What date and time work for you?"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="name_prompt">Name Prompt</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Ask for customer's name
-                    </p>
-                    <Textarea
-                      id="name_prompt"
-                      value={config.appointmentPrompts.name_prompt || ''}
-                      onChange={(e) => updateConfig({
-                        appointmentPrompts: { ...config.appointmentPrompts, name_prompt: e.target.value }
-                      })}
-                      placeholder="Perfect! What's your name?"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="appointment_confirmation">Confirmation Message</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Use <code className="bg-background px-1 rounded">{'{service}'}</code>,{' '}
-                      <code className="bg-background px-1 rounded">{'{datetime}'}</code>,{' '}
-                      <code className="bg-background px-1 rounded">{'{name}'}</code> as placeholders
-                    </p>
-                    <Textarea
-                      id="appointment_confirmation"
-                      value={config.appointmentPrompts.confirmation_template || ''}
-                      onChange={(e) => updateConfig({
-                        appointmentPrompts: { ...config.appointmentPrompts, confirmation_template: e.target.value }
-                      })}
-                      placeholder="✅ Appointment Confirmed!\n\n📅 Service: {service}\n🕐 Time: {datetime}\n👤 Name: {name}"
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="appointment_cancel">Cancellation Message</Label>
-                    <Textarea
-                      id="appointment_cancel"
-                      value={config.appointmentPrompts.cancel_message || ''}
-                      onChange={(e) => updateConfig({
-                        appointmentPrompts: { ...config.appointmentPrompts, cancel_message: e.target.value }
-                      })}
-                      placeholder="Booking cancelled. Anything else I can help with?"
-                      rows={2}
-                    />
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  ✓ Enabled. Use <strong>Booking Flow</strong> below to customize the conversation steps.
+                </p>
               )}
             </CardContent>
           </Card>
@@ -432,14 +355,14 @@ export default function BotConfig() {
               <CardTitle className="flex items-center gap-2">
                 <span>🛒</span> Order Bot
               </CardTitle>
-              <CardDescription>Configure order collection via WhatsApp</CardDescription>
+              <CardDescription>Enable order collection via WhatsApp</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-base">Enable Order Collection</Label>
                   <p className="text-sm text-muted-foreground">
-                    Allow customers to place orders via WhatsApp
+                    Allow customers to place and manage orders via WhatsApp
                   </p>
                 </div>
                 <Switch
@@ -449,81 +372,9 @@ export default function BotConfig() {
               </div>
 
               {config.orderEnabled && (
-                <div className="space-y-4 mt-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="space-y-2">
-                    <Label htmlFor="start_prompt">Start Order Prompt</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Initial message when customer starts ordering
-                    </p>
-                    <Textarea
-                      id="start_prompt"
-                      value={config.orderPrompts.start_prompt || ''}
-                      onChange={(e) => updateConfig({
-                        orderPrompts: { ...config.orderPrompts, start_prompt: e.target.value }
-                      })}
-                      placeholder="What would you like to order?"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="item_added">Item Added Message</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Use <code className="bg-background px-1 rounded">{'{items}'}</code> to show the order list
-                    </p>
-                    <Textarea
-                      id="item_added"
-                      value={config.orderPrompts.item_added_template || ''}
-                      onChange={(e) => updateConfig({
-                        orderPrompts: { ...config.orderPrompts, item_added_template: e.target.value }
-                      })}
-                      placeholder="Added! Your order:\n\n{items}\n\nAdd more or say 'done'"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="order_confirmation">Order Confirmation</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Use <code className="bg-background px-1 rounded">{'{items}'}</code> for order summary
-                    </p>
-                    <Textarea
-                      id="order_confirmation"
-                      value={config.orderPrompts.confirmation_template || ''}
-                      onChange={(e) => updateConfig({
-                        orderPrompts: { ...config.orderPrompts, confirmation_template: e.target.value }
-                      })}
-                      placeholder="✅ Order confirmed!\n\n{items}\n\nWe're processing your order!"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="empty_order">Empty Order Message</Label>
-                    <Textarea
-                      id="empty_order"
-                      value={config.orderPrompts.empty_order_message || ''}
-                      onChange={(e) => updateConfig({
-                        orderPrompts: { ...config.orderPrompts, empty_order_message: e.target.value }
-                      })}
-                      placeholder="Your order is empty. Please add items first!"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="order_cancel">Cancellation Message</Label>
-                    <Textarea
-                      id="order_cancel"
-                      value={config.orderPrompts.cancel_message || ''}
-                      onChange={(e) => updateConfig({
-                        orderPrompts: { ...config.orderPrompts, cancel_message: e.target.value }
-                      })}
-                      placeholder="Order cancelled. Anything else I can help with?"
-                      rows={2}
-                    />
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  ✓ Enabled. Use <strong>Booking Flow</strong> below to customize the order collection steps.
+                </p>
               )}
             </CardContent>
           </Card>

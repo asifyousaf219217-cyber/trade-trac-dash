@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RotateCcw, MessageSquare, User } from 'lucide-react';
+import { RotateCcw, MessageSquare, User, ChevronLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,12 +17,19 @@ type PreviewState =
   | { type: 'booking'; stepIndex: number }
   | { type: 'message'; message: string };
 
+interface ChatMessage {
+  from: 'bot' | 'user';
+  text: string;
+  buttons?: MenuButton[];
+}
+
 export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPreviewProps) {
   const entryMenu = menus.find(m => m.is_entry_point) || menus[0];
   const [state, setState] = useState<PreviewState | null>(
     entryMenu ? { type: 'menu', menuId: entryMenu.id } : null
   );
-  const [messages, setMessages] = useState<Array<{ from: 'bot' | 'user'; text: string }>>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [menuHistory, setMenuHistory] = useState<string[]>([]);
 
   const currentMenu = state?.type === 'menu' 
     ? menus.find(m => m.id === state.menuId) 
@@ -41,7 +48,15 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPrevi
         if (button.next_menu_id) {
           const nextMenu = menus.find(m => m.id === button.next_menu_id);
           if (nextMenu) {
-            setMessages(prev => [...prev, { from: 'bot', text: nextMenu.message_text }]);
+            // Save current menu to history before navigating
+            if (state?.type === 'menu') {
+              setMenuHistory(prev => [...prev, state.menuId]);
+            }
+            setMessages(prev => [...prev, { 
+              from: 'bot', 
+              text: nextMenu.message_text,
+              buttons: nextMenu.buttons || []
+            }]);
             setState({ type: 'menu', menuId: button.next_menu_id });
           }
         }
@@ -66,13 +81,58 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPrevi
         setMessages(prev => [...prev, { from: 'bot', text: '🙋 Routing you to a human agent. Please wait...' }]);
         break;
       case 'CANCEL_APPOINTMENT':
-        setMessages(prev => [...prev, { from: 'bot', text: 'Your appointment has been cancelled.' }]);
+        setMessages(prev => [...prev, { from: 'bot', text: 'Looking for your appointment...\n\n✓ Your appointment has been cancelled.' }]);
+        // Return to entry menu after action
+        if (entryMenu) {
+          setTimeout(() => {
+            setMessages(prev => [...prev, { 
+              from: 'bot', 
+              text: entryMenu.message_text + '\n\nAnything else I can help with?',
+              buttons: entryMenu.buttons || []
+            }]);
+            setState({ type: 'menu', menuId: entryMenu.id });
+          }, 500);
+        }
         break;
       case 'CANCEL_ORDER':
         setMessages(prev => [...prev, { from: 'bot', text: 'Your order has been cancelled.' }]);
+        // Return to entry menu after action
+        if (entryMenu) {
+          setTimeout(() => {
+            setMessages(prev => [...prev, { 
+              from: 'bot', 
+              text: entryMenu.message_text,
+              buttons: entryMenu.buttons || []
+            }]);
+            setState({ type: 'menu', menuId: entryMenu.id });
+          }, 500);
+        }
         break;
       default:
         setMessages(prev => [...prev, { from: 'bot', text: `Action: ${ACTION_TYPE_LABELS[button.action_type]}` }]);
+    }
+  };
+
+  const handleBackNavigation = () => {
+    if (menuHistory.length > 0) {
+      const previousMenuId = menuHistory[menuHistory.length - 1];
+      const previousMenu = menus.find(m => m.id === previousMenuId);
+      setMenuHistory(prev => prev.slice(0, -1));
+      
+      if (previousMenu) {
+        setMessages(prev => [...prev, 
+          { from: 'user', text: '⬅ Back' },
+          { from: 'bot', text: previousMenu.message_text, buttons: previousMenu.buttons || [] }
+        ]);
+        setState({ type: 'menu', menuId: previousMenuId });
+      }
+    } else if (entryMenu) {
+      // Go back to entry menu
+      setMessages(prev => [...prev, 
+        { from: 'user', text: '⬅ Back' },
+        { from: 'bot', text: entryMenu.message_text, buttons: entryMenu.buttons || [] }
+      ]);
+      setState({ type: 'menu', menuId: entryMenu.id });
     }
   };
 
@@ -93,19 +153,34 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPrevi
           { from: 'user', text: '(User response)' },
           { from: 'bot', text: '✅ Booking confirmed! Thank you.' }
         ]);
-        setState(null);
+        // Return to entry menu
+        if (entryMenu) {
+          setTimeout(() => {
+            setMessages(prev => [...prev, { 
+              from: 'bot', 
+              text: entryMenu.message_text,
+              buttons: entryMenu.buttons || []
+            }]);
+            setState({ type: 'menu', menuId: entryMenu.id });
+          }, 500);
+        } else {
+          setState(null);
+        }
       }
     }
   };
 
   const handleReset = () => {
     setMessages([]);
+    setMenuHistory([]);
     if (entryMenu) {
       setState({ type: 'menu', menuId: entryMenu.id });
     } else {
       setState(null);
     }
   };
+
+  const canGoBack = state?.type === 'menu' && currentMenu && !currentMenu.is_entry_point;
 
   return (
     <Card className="sticky top-8">
@@ -114,12 +189,12 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPrevi
           <CardTitle className="flex items-center gap-2 text-base">
             <span className="text-green-500">●</span> WhatsApp Preview
           </CardTitle>
-          <Button variant="ghost" size="icon" onClick={handleReset}>
+          <Button variant="ghost" size="icon" onClick={handleReset} title="Reset conversation">
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
         <CardDescription className="text-xs">
-          Click buttons to simulate the flow
+          Click buttons to simulate the customer flow
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -192,6 +267,21 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPrevi
             </div>
           )}
 
+          {/* Back button for non-entry menus */}
+          {canGoBack && (
+            <div className="flex justify-center">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={handleBackNavigation}
+                className="gap-1 text-muted-foreground"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back to previous menu
+              </Button>
+            </div>
+          )}
+
           {/* Empty state */}
           {!entryMenu && menus.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
@@ -204,7 +294,12 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPrevi
         {/* State indicator */}
         <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
           <span>
-            {state?.type === 'menu' && currentMenu && `Menu: ${currentMenu.menu_name}`}
+            {state?.type === 'menu' && currentMenu && (
+              <span className="flex items-center gap-1">
+                Menu: <Badge variant="outline" className="text-xs">{currentMenu.menu_name}</Badge>
+                {currentMenu.is_entry_point && <span className="text-green-600">(Entry)</span>}
+              </span>
+            )}
             {state?.type === 'booking' && currentStep && `Step ${state.stepIndex + 1}/${bookingSteps.length}`}
             {state?.type === 'message' && 'Custom flow'}
             {!state && 'Flow complete'}
@@ -213,6 +308,28 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting }: WhatsAppPrevi
             {messages.length} messages
           </Badge>
         </div>
+
+        {/* Navigation breadcrumb */}
+        {menuHistory.length > 0 && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            <span>Path: </span>
+            {menuHistory.map((menuId, i) => {
+              const menu = menus.find(m => m.id === menuId);
+              return (
+                <span key={i}>
+                  {menu?.menu_name || 'Menu'}
+                  {i < menuHistory.length - 1 && ' → '}
+                </span>
+              );
+            })}
+            {currentMenu && (
+              <>
+                {menuHistory.length > 0 && ' → '}
+                <span className="font-medium">{currentMenu.menu_name}</span>
+              </>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
