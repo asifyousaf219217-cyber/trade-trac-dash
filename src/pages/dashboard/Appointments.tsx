@@ -80,30 +80,22 @@ export default function Appointments() {
         return;
       }
       
-      const webhookUrl = 'https://asifyousaf.app.n8n.cloud/webhook/send-confirmation';
-      
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Call secure edge function instead of n8n directly
+      const { data, error } = await supabase.functions.invoke('send-confirmation', {
+        body: {
           type: 'appointment',
           record_id: appointmentId,
           status: newStatus,
           business_id: business.id
-        })
+        }
       });
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Webhook error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to send confirmation');
       }
       
-      const result = await response.json();
-      console.log('Confirmation sent:', result);
-      
+      console.log('Confirmation sent:', data);
       toast.success('✅ Confirmation sent to customer via WhatsApp!');
       
     } catch (error) {
