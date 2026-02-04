@@ -128,6 +128,7 @@ export interface BotConfigFormData {
   isActive: boolean;
   fallbackMessage: string;
   unknownMessageHelp: string;
+  faqWelcomeMessage: string;
   aiFallback: boolean;
   appointmentEnabled: boolean;
   appointmentPrompts: AppointmentPrompts;

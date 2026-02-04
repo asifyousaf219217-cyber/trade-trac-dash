@@ -20,7 +20,9 @@ export interface BotConfigData {
   order_prompts: OrderPrompts | null;
   selected_template: string | null;
   cancellation_enabled: boolean | null;
-  // NEW: Template tracking fields
+  // NEW: FAQ welcome message shown when user taps FAQ button
+  faq_welcome_message: string | null;
+  // Template tracking fields
   active_template_id: string | null;
   template_applied_at: string | null;
   created_at: string;
@@ -33,6 +35,7 @@ export interface BotConfigUpdate {
   is_active?: boolean;
   fallback_message?: string;
   unknown_message_help?: string;
+  faq_welcome_message?: string;
   ai_fallback?: boolean;
   order_enabled?: boolean;
   appointment_enabled?: boolean;

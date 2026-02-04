@@ -27,6 +27,9 @@ export interface TemplateDefinition {
   appointment_enabled: boolean;
   order_enabled: boolean;
   
+  // FAQ Welcome Message (shown when user taps FAQ button)
+  faq_welcome_message: string;
+  
   // FAQs / Static Replies (CRITICAL for proper template isolation)
   static_replies: StaticReplyDef[];
   
@@ -84,14 +87,20 @@ export const SALON_TEMPLATE: TemplateDefinition = {
   fallback_message: "Thanks for reaching out! Our stylists will respond shortly. Try tapping a button below.",
   unknown_message_help: "Not sure what to do? Try:\n• Tap '📅 Appointments' to book\n• Tap '❓ FAQ' for common questions\n• Tap '💬 Support' for help",
   
+  faq_welcome_message: "💇 *Got questions? I've got answers!*\n\nJust type what you want to know:\n• Hours / When are you open?\n• Prices / Services list\n• Location / Address\n• How to cancel\n\nOr ask anything else!\n\n_Type 'menu' to go back 📱_",
+  
   appointment_enabled: true,
   order_enabled: false,
   
   static_replies: [
-    { keywords: ['hours', 'open', 'close', 'time', 'schedule'], reply: "💇 Our Hours:\nMon-Sat: 9AM - 7PM\nSunday: 10AM - 5PM\n\nBook anytime via the menu!" },
-    { keywords: ['price', 'cost', 'menu', 'services', 'list', 'rate'], reply: "💅 Our Services:\n• Haircut - $35\n• Manicure - $25\n• Pedicure - $30\n• Facial - $60\n• Massage - $80\n\nTap 📅 to book!" },
-    { keywords: ['location', 'address', 'where', 'find'], reply: "📍 We're located at 123 Beauty Lane, Suite 100.\n\nParking available in back!" },
-    { keywords: ['cancel', 'reschedule', 'change'], reply: "To cancel or reschedule, tap the menu button and select 'Cancel Appointment'." },
+    { keywords: ['hours', 'open', 'close', 'time', 'schedule', 'when'], reply: "💇 Our Hours:\nMon-Sat: 9AM - 7PM\nSunday: 10AM - 5PM\n\nBook anytime via the menu!" },
+    { keywords: ['price', 'cost', 'menu', 'services', 'list', 'rate', 'how much'], reply: "💅 Our Services:\n• Haircut - $35\n• Manicure - $25\n• Pedicure - $30\n• Facial - $60\n• Massage - $80\n\nTap 📅 to book!" },
+    { keywords: ['location', 'address', 'where', 'find', 'directions'], reply: "📍 We're at 123 Beauty Lane, Suite 100.\n\nParking available in back!" },
+    { keywords: ['cancel', 'reschedule', 'change', 'modify'], reply: "To cancel or reschedule, tap the menu button and select 'Cancel Appointment'." },
+    { keywords: ['walk-in', 'walkin', 'appointment', 'need appointment'], reply: "🚶 Walk-ins welcome!\n\nBut we recommend booking to guarantee your spot, especially on weekends." },
+    { keywords: ['payment', 'pay', 'card', 'cash', 'credit'], reply: "💳 We accept:\n• Cash\n• Credit/Debit cards\n• Apple Pay / Google Pay\n\nTips appreciated!" },
+    { keywords: ['parking', 'park'], reply: "🅿️ Free parking available in the back of the building!" },
+    { keywords: ['gift', 'voucher', 'certificate'], reply: "🎁 Yes! We offer gift certificates.\n\nAvailable for any amount - perfect for birthdays and holidays!" },
   ],
   
   services: [
@@ -172,14 +181,20 @@ export const RESTAURANT_TEMPLATE: TemplateDefinition = {
   fallback_message: "Thanks for your message! Our team will get back to you. Tap a button below to get started.",
   unknown_message_help: "Hungry? Here's what you can do:\n• Tap '🍽 View Menu' to see options\n• Tap '🛒 Order Now' to place an order\n• Tap '💬 Support' for help",
   
+  faq_welcome_message: "🍕 *What can I help you with?*\n\nAsk me about:\n• Menu / Prices\n• Delivery / Do you deliver?\n• Hours / Opening times\n• Specials / Today's deals\n\nJust type your question!\n\n_Type 'menu' for the main menu 📱_",
+  
   appointment_enabled: false,
   order_enabled: true,
   
   static_replies: [
-    { keywords: ['hours', 'open', 'close', 'time'], reply: "🍕 We're open:\nDaily: 11AM - 10PM\nDelivery until 9:30PM\n\nTap 🛒 to order!" },
-    { keywords: ['menu', 'food', 'eat', 'price', 'cost', 'list'], reply: "🍕 Our Menu:\n• Margherita Pizza - $12\n• Pepperoni Pizza - $14\n• Pasta Carbonara - $15\n• Caesar Salad - $10\n• Garlic Bread - $6\n\nTap 🛒 to order!" },
-    { keywords: ['delivery', 'deliver', 'area'], reply: "🚗 Yes, we deliver!\n• Within 5 miles\n• Free delivery on orders over $30\n• Usually 30-45 minutes" },
-    { keywords: ['location', 'address', 'where'], reply: "📍 We're at 456 Food Street.\nDine-in, takeout, or delivery available!" },
+    { keywords: ['hours', 'open', 'close', 'time', 'when'], reply: "🍕 We're open:\nDaily: 11AM - 10PM\nDelivery until 9:30PM\n\nTap 🛒 to order!" },
+    { keywords: ['menu', 'food', 'eat', 'price', 'cost', 'list', 'prices'], reply: "🍕 Our Menu:\n• Margherita Pizza - $12\n• Pepperoni Pizza - $14\n• Pasta Carbonara - $15\n• Caesar Salad - $10\n• Garlic Bread - $6\n\nTap 🛒 to order!" },
+    { keywords: ['delivery', 'deliver', 'area', 'zone'], reply: "🚗 Yes, we deliver!\n• Within 5 miles\n• Free on orders over $30\n• Usually 30-45 minutes" },
+    { keywords: ['location', 'address', 'where'], reply: "📍 456 Food Street.\nDine-in, takeout, or delivery!" },
+    { keywords: ['vegan', 'vegetarian', 'gluten', 'allergy', 'allergen'], reply: "🥗 We have options for:\n• Vegetarian ✓\n• Vegan ✓\n• Gluten-free (upon request)\n\nPlease mention allergies when ordering!" },
+    { keywords: ['special', 'deal', 'discount', 'promotion', 'today'], reply: "🎉 Today's Specials:\n• Happy Hour 3-6PM: 20% off\n• Family Bundle: 2 pizzas + salad = $35\n• Free delivery on orders $30+" },
+    { keywords: ['reservation', 'reserve', 'table', 'book table'], reply: "🪑 Reservations recommended for parties of 6+.\n\nCall us or just walk in for smaller groups!" },
+    { keywords: ['tip', 'gratuity'], reply: "💰 Tips are optional but appreciated!\n18% auto-gratuity for parties of 8+." },
   ],
   
   services: [
@@ -232,6 +247,8 @@ export const SCHOOL_TEMPLATE: TemplateDefinition = {
   fallback_message: "Thanks for reaching out! Our admissions team will respond soon.",
   unknown_message_help: "Need help? Try:\n• Tap '📚 Classes' to view our programs\n• Tap '📅 Schedule' to see times\n• Tap '💬 Support' for assistance",
   
+  faq_welcome_message: "📚 *Ask me anything!*\n\nCommon questions:\n• Classes / Programs offered\n• Fees / Tuition cost\n• Schedule / Class times\n• Age / Grade levels\n\nType your question!\n\n_Type 'menu' to go back 📱_",
+  
   appointment_enabled: true,
   order_enabled: false,
   
@@ -241,6 +258,10 @@ export const SCHOOL_TEMPLATE: TemplateDefinition = {
     { keywords: ['fee', 'cost', 'price', 'tuition', 'payment'], reply: "💰 Fees vary by program:\n• Tutoring: $45-60/hr\n• Group classes: $30-40/session\n• Monthly packages available!\n\nContact admissions for details." },
     { keywords: ['location', 'address', 'where', 'find'], reply: "📍 We're at 456 Education Drive.\nFree parking available for students and parents!" },
     { keywords: ['age', 'grade', 'level'], reply: "👨‍🎓 We accept students:\n• Elementary (K-5)\n• Middle School (6-8)\n• High School (9-12)\n• Adult learners welcome!" },
+    { keywords: ['discount', 'sibling', 'multiple'], reply: "👨‍👩‍👧‍👦 Sibling Discount:\n10% off for 2nd child\n15% off for 3rd child\n\nFamily friendly!" },
+    { keywords: ['trial', 'free', 'demo', 'try'], reply: "✨ First class FREE!\n\nCome try any program before enrolling." },
+    { keywords: ['homework', 'help', 'tutoring'], reply: "📖 Yes, we help with homework!\n\nBring your assignments and our tutors will guide you." },
+    { keywords: ['uniform', 'dress', 'code'], reply: "👕 No uniform required.\n\nComfortable clothes recommended for active learning." },
   ],
   
   services: [
@@ -321,6 +342,8 @@ export const GYM_TEMPLATE: TemplateDefinition = {
   fallback_message: "Thanks for reaching out! Our team will respond shortly.",
   unknown_message_help: "Need help?\n• Tap '🏋️ Classes' to book a session\n• Tap '📋 Membership' for info\n• Tap '💬 Support' for assistance",
   
+  faq_welcome_message: "💪 *Need info? Ask away!*\n\nPopular questions:\n• Membership / Pricing\n• Classes / Schedule\n• Hours / Open 24/7?\n• Personal training\n\nJust type what you need!\n\n_Type 'menu' to go back 📱_",
+  
   appointment_enabled: true,
   order_enabled: false,
   
@@ -330,6 +353,10 @@ export const GYM_TEMPLATE: TemplateDefinition = {
     { keywords: ['classes', 'schedule', 'class', 'session'], reply: "🧘 Our Classes:\n• Yoga - Daily 7AM & 6PM\n• Spin - Mon/Wed/Fri 5:30PM\n• CrossFit - Tue/Thu 6PM\n• Boxing - Sat 10AM\n• HIIT - Daily 12PM\n\nTap 📅 to book!" },
     { keywords: ['location', 'address', 'where', 'find'], reply: "📍 We're at 789 Fitness Blvd.\nFree parking, locker rooms, and showers available!" },
     { keywords: ['trainer', 'personal', 'pt'], reply: "💪 Personal Training:\n• 1 Session - $60\n• 5 Pack - $275 (save $25)\n• 10 Pack - $500 (save $100)\n\nFirst session FREE for new members!" },
+    { keywords: ['cancel', 'membership', 'stop', 'freeze'], reply: "❄️ Membership Options:\n• Freeze: $10/month (up to 3 months)\n• Cancel: 30-day notice required\n\nNo contract after 1st month!" },
+    { keywords: ['guest', 'friend', 'bring'], reply: "👋 Guests welcome!\n$10/day pass for friends.\n\nMembers get 2 free guest passes/month." },
+    { keywords: ['shower', 'locker', 'towel'], reply: "🚿 Locker rooms include:\n• Showers\n• Free towels\n• Lockers (bring your own lock)\n• Hair dryers" },
+    { keywords: ['equipment', 'machine', 'weights'], reply: "🏋️ Full equipment:\n• Free weights (up to 100lb)\n• Machines for all muscle groups\n• Cardio: treadmills, bikes, ellipticals\n• Functional training area" },
   ],
   
   services: [
@@ -410,6 +437,8 @@ export const AUTO_TEMPLATE: TemplateDefinition = {
   fallback_message: "Thanks for reaching out! Our mechanics will get back to you soon.",
   unknown_message_help: "Need help?\n• Tap '🔧 Services' to book a service\n• Tap '💰 Pricing' for estimates\n• Tap '💬 Support' for help",
   
+  faq_welcome_message: "🚗 *Questions about service?*\n\nAsk about:\n• Prices / Service cost\n• Hours / Availability\n• Location / Drop-off\n• Warranty / Guarantee\n\nType your question!\n\n_Type 'menu' to go back 📱_",
+  
   appointment_enabled: true,
   order_enabled: false,
   
@@ -419,6 +448,10 @@ export const AUTO_TEMPLATE: TemplateDefinition = {
     { keywords: ['location', 'address', 'where', 'find'], reply: "📍 We're at 321 Auto Lane.\nDrop-off area in front, waiting room with WiFi & coffee!" },
     { keywords: ['tow', 'emergency', 'breakdown'], reply: "🚨 Need a tow?\nCall our 24/7 line: (555) 123-4567\nWe'll get you sorted!" },
     { keywords: ['warranty', 'guarantee'], reply: "✅ All work guaranteed!\n• Parts: Manufacturer warranty\n• Labor: 90-day guarantee\n• Satisfaction guaranteed or we'll make it right!" },
+    { keywords: ['appointment', 'wait', 'drop off'], reply: "🚗 Two options:\n• Wait: Most services done in 1-2 hours\n• Drop-off: Leave your car, we'll call when ready\n\nFree WiFi in waiting room!" },
+    { keywords: ['pickup', 'shuttle', 'ride'], reply: "🚐 Need a ride?\nWe offer free shuttle within 5 miles when you drop off your car." },
+    { keywords: ['diagnostic', 'check engine', 'light', 'scan'], reply: "🔍 Free diagnostic scan!\nWe'll read your codes and give you an honest assessment." },
+    { keywords: ['used', 'parts', 'aftermarket'], reply: "🔧 We use:\n• OEM parts (original)\n• Quality aftermarket on request\n• Your choice – we'll explain the differences!" },
   ],
   
   services: [
