@@ -274,7 +274,7 @@ export function useApplyTemplateDefaults() {
       await supabase.from('booking_steps').delete().eq('business_id', business.id);
 
       // ══════════════════════════════════════════════════════════
-      // STEP 2: UPDATE BOT CONFIG (All fields from template)
+      // STEP 2: UPDATE BOT CONFIG (ALL fields from template - FULL OVERWRITE)
       // ══════════════════════════════════════════════════════════
       
       await supabase
@@ -286,6 +286,12 @@ export function useApplyTemplateDefaults() {
           unknown_message_help: template.unknown_message_help,
           appointment_enabled: template.appointment_enabled,
           order_enabled: template.order_enabled,
+          // CRITICAL: Include static_replies (FAQs) from template
+          static_replies: template.static_replies,
+          selected_template: template.id,
+          // NEW: Template tracking fields
+          active_template_id: template.id,
+          template_applied_at: new Date().toISOString(),
           is_active: true,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'business_id' });
@@ -332,7 +338,7 @@ export function useApplyTemplateDefaults() {
       }
 
       // ══════════════════════════════════════════════════════════
-      // STEP 4: CREATE BOOKING STEPS (if appointment-based)
+      // STEP 4: CREATE BOOKING STEPS (if appointment-based, with new input_type fields)
       // ══════════════════════════════════════════════════════════
       
       if (template.booking_steps && template.booking_steps.length > 0) {
@@ -342,8 +348,16 @@ export function useApplyTemplateDefaults() {
           step_type: step.step_type,
           prompt_text: step.prompt_text,
           validation_type: step.validation_type,
-          is_required: true,
+          // Interactive input fields
+          input_type: step.input_type || 'TEXT',
+          expected_values: step.expected_values || [],
+          validation_regex: step.validation_regex || null,
+          retry_message: step.retry_message || null,
+          is_required: step.is_required ?? true,
           is_enabled: true,
+          // CRITICAL FIX: Copy list items on template apply for dashboard visibility
+          list_source: step.input_type === 'LIST' || step.input_type === 'BUTTON' ? 'template_default' : 'custom',
+          list_items: step.expected_values || [],
         }));
         
         await supabase.from('booking_steps').insert(steps);
@@ -441,6 +455,8 @@ export function useApplyMarketplaceTemplate() {
         validation_type?: string;
         is_required?: boolean;
         is_enabled?: boolean;
+        input_type?: 'TEXT' | 'BUTTON' | 'LIST';
+        expected_values?: string[];
       }> }).defaultSteps;
 
       if (defaultSteps) {
@@ -453,6 +469,11 @@ export function useApplyMarketplaceTemplate() {
             validation_type: step.validation_type || 'text',
             is_required: step.is_required ?? true,
             is_enabled: step.is_enabled ?? true,
+            // CRITICAL FIX: Include interactive fields for marketplace templates
+            input_type: step.input_type || 'TEXT',
+            expected_values: step.expected_values || [],
+            list_source: step.input_type === 'LIST' || step.input_type === 'BUTTON' ? 'template_default' : 'custom',
+            list_items: step.expected_values || [],
           }))
         );
         stepsCreated = defaultSteps.length;

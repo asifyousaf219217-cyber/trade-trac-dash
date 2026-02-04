@@ -52,6 +52,14 @@ export function useCreateBookingStep() {
           step_type: step.step_type || 'CUSTOM',
           prompt_text: step.prompt_text || 'Enter your response:',
           validation_type: step.validation_type || 'text',
+          // Interactive input fields
+          input_type: step.input_type || 'TEXT',
+          expected_values: step.expected_values || [],
+          validation_regex: step.validation_regex || null,
+          retry_message: step.retry_message || null,
+          // List control fields
+          list_source: step.list_source || 'custom',
+          list_items: step.list_items || [],
           is_required: step.is_required ?? true,
           is_enabled: step.is_enabled ?? true,
         })
@@ -79,6 +87,14 @@ export function useUpdateBookingStep() {
           step_type: updates.step_type,
           prompt_text: updates.prompt_text,
           validation_type: updates.validation_type,
+          // Interactive input fields
+          input_type: updates.input_type,
+          expected_values: updates.expected_values,
+          validation_regex: updates.validation_regex,
+          retry_message: updates.retry_message,
+          // List control fields
+          list_source: updates.list_source,
+          list_items: updates.list_items,
           is_required: updates.is_required,
           is_enabled: updates.is_enabled,
         })

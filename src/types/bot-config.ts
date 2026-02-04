@@ -58,6 +58,9 @@ export type ActionType =
   | 'CANCEL_ORDER'
   | 'CUSTOM';
 
+// List source types
+export type ListSource = 'custom' | 'services' | 'menu_items' | 'template_default';
+
 // Booking Step Types
 export interface BookingStep {
   id: string;
@@ -68,7 +71,23 @@ export interface BookingStep {
   validation_type?: ValidationType | null;
   is_required: boolean;
   is_enabled: boolean;
+  // Interactive input fields
+  input_type?: 'BUTTON' | 'LIST' | 'TEXT';
+  expected_values?: string[];
+  validation_regex?: string | null;
+  retry_message?: string | null;
+  skip_button_label?: string | null;
+  // List control fields
+  list_source?: ListSource;
+  list_items?: string[];
 }
+
+export const LIST_SOURCE_LABELS: Record<ListSource, string> = {
+  'custom': 'Custom List',
+  'services': 'Services (from template)',
+  'menu_items': 'Menu Items',
+  'template_default': 'Template Default',
+};
 
 export type StepType = 
   | 'SERVICE'

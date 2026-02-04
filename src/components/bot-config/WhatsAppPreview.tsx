@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react';
-import { RotateCcw, MessageSquare, User, ChevronLeft, AlertTriangle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { RotateCcw, MessageSquare, User, ChevronLeft, AlertTriangle, List } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { InteractiveMenu, MenuButton, BookingStep } from '@/types/bot-config';
 import { ACTION_TYPE_LABELS } from '@/types/bot-config';
+import { getInteractiveType } from '@/lib/whatsapp-message-types';
 
 interface WhatsAppPreviewProps {
   menus: InteractiveMenu[];
   bookingSteps: BookingStep[];
   greeting: string;
   templateName?: string;
+  templateId?: string | null;
 }
 
 type PreviewState = 
@@ -23,12 +25,29 @@ interface ChatMessage {
   from: 'bot' | 'user';
   text: string;
   buttons?: MenuButton[];
+  listOptions?: string[];  // For LIST type steps
 }
 
-export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName }: WhatsAppPreviewProps) {
+export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName, templateId }: WhatsAppPreviewProps) {
   const [state, setState] = useState<PreviewState | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [menuHistory, setMenuHistory] = useState<string[]>([]);
+  const [prevTemplateId, setPrevTemplateId] = useState<string | null>(null);
+
+  // CRITICAL: Reset preview when template changes
+  useEffect(() => {
+    if (templateId !== prevTemplateId) {
+      setPrevTemplateId(templateId || null);
+      const newEntryMenu = menus.find(m => m.is_entry_point) || menus[0];
+      setMessages([]);
+      setMenuHistory([]);
+      if (newEntryMenu) {
+        setState({ type: 'menu', menuId: newEntryMenu.id });
+      } else {
+        setState(null);
+      }
+    }
+  }, [templateId, menus, prevTemplateId]);
 
   // Reset preview when menus or greeting change
   useEffect(() => {
@@ -111,7 +130,14 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName }:
       case 'START_BOOKING':
         if (bookingSteps.length > 0) {
           const firstStep = bookingSteps[0];
-          setMessages(prev => [...prev, { from: 'bot', text: firstStep.prompt_text }]);
+          const expectedValues = (firstStep.expected_values as string[] | undefined) || [];
+          const inputType = firstStep.input_type || 'TEXT';
+          
+          setMessages(prev => [...prev, { 
+            from: 'bot', 
+            text: firstStep.prompt_text,
+            listOptions: inputType !== 'TEXT' ? expectedValues : undefined
+          }]);
           setState({ type: 'booking', stepIndex: 0 });
         } else {
           setMessages(prev => [...prev, { from: 'bot', text: 'Booking flow started! (No steps configured)' }]);
@@ -183,21 +209,32 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName }:
     }
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = (selectedValue?: string) => {
     if (state?.type === 'booking') {
       const nextIndex = state.stepIndex + 1;
+      const currentStep = bookingSteps[state.stepIndex];
+      const expectedValues = (currentStep?.expected_values as string[] | undefined) || [];
+      const userResponse = selectedValue || expectedValues[0] || '(User response)';
+      
       if (nextIndex < bookingSteps.length) {
         const nextStep = bookingSteps[nextIndex];
+        const nextExpectedValues = (nextStep.expected_values as string[] | undefined) || [];
+        const nextInputType = nextStep.input_type || 'TEXT';
+        
         setMessages(prev => [
           ...prev, 
-          { from: 'user', text: '(User response)' },
-          { from: 'bot', text: nextStep.prompt_text }
+          { from: 'user', text: userResponse },
+          { 
+            from: 'bot', 
+            text: nextStep.prompt_text,
+            listOptions: nextInputType !== 'TEXT' ? nextExpectedValues : undefined
+          }
         ]);
         setState({ type: 'booking', stepIndex: nextIndex });
       } else {
         setMessages(prev => [
           ...prev,
-          { from: 'user', text: '(User response)' },
+          { from: 'user', text: userResponse },
           { from: 'bot', text: '✅ Booking confirmed! Thank you.' }
         ]);
         // Return to entry menu
@@ -316,12 +353,37 @@ export function WhatsAppPreview({ menus, bookingSteps, greeting, templateName }:
             </div>
           )}
 
-          {/* Booking step simulation */}
+          {/* Booking step simulation with interactive options */}
           {currentStep && (
-            <div className="flex justify-end">
-              <Button size="sm" variant="outline" onClick={handleNextStep}>
-                Simulate User Response →
-              </Button>
+            <div className="space-y-2">
+              {/* Show LIST/BUTTON options if available */}
+              {currentStep.input_type !== 'TEXT' && (currentStep.expected_values as string[] | undefined)?.length ? (
+                <div className="flex items-start gap-2">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-500">
+                    <List className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <div className="bg-white dark:bg-zinc-700 rounded-lg rounded-tl-none p-3 max-w-[85%] shadow-sm space-y-1">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {getInteractiveType(currentStep.expected_values as string[]) === 'list' ? '📋 List options' : '🔘 Button options'}
+                    </p>
+                    {(currentStep.expected_values as string[]).slice(0, 5).map((option, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleNextStep(option)}
+                        className="w-full text-left px-3 py-2 text-sm border rounded-lg hover:bg-muted transition-colors"
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-end">
+                  <Button size="sm" variant="outline" onClick={() => handleNextStep()}>
+                    Simulate User Response →
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 

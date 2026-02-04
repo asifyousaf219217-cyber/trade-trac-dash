@@ -13,10 +13,16 @@ export interface BotConfigData {
   fallback_message: string | null;
   unknown_message_help: string | null;
   ai_fallback: boolean | null;
+  ai_enabled: boolean | null;
   order_enabled: boolean | null;
   appointment_enabled: boolean | null;
   appointment_prompts: AppointmentPrompts | null;
   order_prompts: OrderPrompts | null;
+  selected_template: string | null;
+  cancellation_enabled: boolean | null;
+  // NEW: Template tracking fields
+  active_template_id: string | null;
+  template_applied_at: string | null;
   created_at: string;
   updated_at: string;
 }

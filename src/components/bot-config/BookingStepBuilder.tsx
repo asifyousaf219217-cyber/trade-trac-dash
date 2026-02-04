@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Trash2, GripVertical, Edit2, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Trash2, GripVertical, Edit2, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,8 +15,8 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { useBookingSteps, useCreateBookingStep, useUpdateBookingStep, useDeleteBookingStep, useReorderBookingSteps } from '@/hooks/useBookingSteps';
 import { toast } from '@/hooks/use-toast';
-import type { BookingStep, StepType, ValidationType } from '@/types/bot-config';
-import { STEP_TYPE_LABELS, VALIDATION_TYPE_LABELS } from '@/types/bot-config';
+import type { BookingStep, StepType, ValidationType, ListSource } from '@/types/bot-config';
+import { STEP_TYPE_LABELS, VALIDATION_TYPE_LABELS, LIST_SOURCE_LABELS } from '@/types/bot-config';
 
 interface SortableStepItemProps {
   step: BookingStep;
@@ -50,11 +50,22 @@ function SortableStepItem({ step, onEdit, onToggleEnabled, onToggleRequired, onD
       </Badge>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium truncate">{STEP_TYPE_LABELS[step.step_type as StepType]}</span>
           {step.is_required && <Badge variant="secondary" className="text-xs">Required</Badge>}
+          {step.input_type === 'LIST' && (
+            <Badge variant="outline" className="text-xs bg-purple-50 dark:bg-purple-950">📋 List</Badge>
+          )}
+          {step.input_type === 'BUTTON' && (
+            <Badge variant="outline" className="text-xs bg-blue-50 dark:bg-blue-950">🔘 Buttons</Badge>
+          )}
         </div>
         <p className="text-sm text-muted-foreground truncate">{step.prompt_text}</p>
+        {(step.input_type === 'LIST' || step.input_type === 'BUTTON') && step.expected_values && step.expected_values.length > 0 && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {step.expected_values.length} option{step.expected_values.length !== 1 ? 's' : ''}: {step.expected_values.slice(0, 3).join(', ')}{step.expected_values.length > 3 ? '...' : ''}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
@@ -103,26 +114,91 @@ function StepEditorModal({ step, open, onOpenChange, onSave }: StepEditorModalPr
   const [validationType, setValidationType] = useState<ValidationType>(step?.validation_type as ValidationType || 'text');
   const [isRequired, setIsRequired] = useState(step?.is_required ?? true);
   const [isEnabled, setIsEnabled] = useState(step?.is_enabled ?? true);
+  
+  // Input type and list fields
+  const [inputType, setInputType] = useState<'TEXT' | 'BUTTON' | 'LIST'>(step?.input_type || 'TEXT');
+  const [listSource, setListSource] = useState<ListSource>(step?.list_source || 'custom');
+  const [listItems, setListItems] = useState<string[]>(step?.list_items || step?.expected_values || []);
+  const [newItem, setNewItem] = useState('');
+  const [retryMessage, setRetryMessage] = useState(step?.retry_message || '');
+
+  // Reset state when step changes
+  useEffect(() => {
+    if (step) {
+      setStepType(step.step_type as StepType);
+      setPromptText(step.prompt_text);
+      setValidationType(step.validation_type as ValidationType || 'text');
+      setIsRequired(step.is_required ?? true);
+      setIsEnabled(step.is_enabled ?? true);
+      setInputType(step.input_type || 'TEXT');
+      setListSource(step.list_source || 'custom');
+      setListItems(step.list_items || step.expected_values || []);
+      setRetryMessage(step.retry_message || '');
+    } else {
+      // Reset to defaults for new step
+      setStepType('CUSTOM');
+      setPromptText('');
+      setValidationType('text');
+      setIsRequired(true);
+      setIsEnabled(true);
+      setInputType('TEXT');
+      setListSource('custom');
+      setListItems([]);
+      setRetryMessage('');
+    }
+    setNewItem('');
+  }, [step, open]);
+
+  const addListItem = () => {
+    if (newItem.trim() && listItems.length < 20) {
+      setListItems([...listItems, newItem.trim()]);
+      setNewItem('');
+    }
+  };
+
+  const removeListItem = (index: number) => {
+    setListItems(listItems.filter((_, i) => i !== index));
+  };
+
+  const moveItem = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= listItems.length) return;
+    const newItems = [...listItems];
+    [newItems[index], newItems[newIndex]] = [newItems[newIndex], newItems[index]];
+    setListItems(newItems);
+  };
 
   const handleSave = () => {
+    const expectedValues = inputType !== 'TEXT' ? listItems : [];
+    
     onSave({
       step_type: stepType,
       prompt_text: promptText,
       validation_type: validationType,
       is_required: isRequired,
       is_enabled: isEnabled,
+      input_type: inputType,
+      list_source: listSource,
+      list_items: listItems,
+      expected_values: expectedValues,
+      retry_message: retryMessage || 'Please select one of the options above 👆',
     });
     onOpenChange(false);
   };
 
+  // Allow template_default with items, only block custom with no items
+  const showListEditor = inputType !== 'TEXT' && (listSource === 'custom' || listSource === 'template_default');
+  const isListTypeWithNoItems = inputType !== 'TEXT' && (listSource === 'custom' || listSource === 'template_default') && listItems.length === 0;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{step ? 'Edit Booking Step' : 'Add Booking Step'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Step Type */}
           <div className="space-y-2">
             <Label>Step Type</Label>
             <Select value={stepType} onValueChange={(v) => setStepType(v as StepType)}>
@@ -139,6 +215,7 @@ function StepEditorModal({ step, open, onOpenChange, onSave }: StepEditorModalPr
             </Select>
           </div>
 
+          {/* Prompt Text */}
           <div className="space-y-2">
             <Label htmlFor="promptText">Prompt Text</Label>
             <Textarea
@@ -146,26 +223,168 @@ function StepEditorModal({ step, open, onOpenChange, onSave }: StepEditorModalPr
               value={promptText}
               onChange={(e) => setPromptText(e.target.value)}
               placeholder="What service would you like?"
-              rows={3}
+              rows={2}
             />
           </div>
 
+          {/* INPUT TYPE SELECTOR */}
           <div className="space-y-2">
-            <Label>Validation Type</Label>
-            <Select value={validationType} onValueChange={(v) => setValidationType(v as ValidationType)}>
+            <Label>Input Type</Label>
+            <Select value={inputType} onValueChange={(v) => setInputType(v as 'TEXT' | 'BUTTON' | 'LIST')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(VALIDATION_TYPE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="TEXT">Free Text</SelectItem>
+                <SelectItem value="BUTTON">Buttons (1-3 options)</SelectItem>
+                <SelectItem value="LIST">List Menu (4-10 options)</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              {inputType === 'TEXT' && 'Customer types their response freely'}
+              {inputType === 'BUTTON' && 'Customer taps one of up to 3 buttons'}
+              {inputType === 'LIST' && 'Customer selects from a scrollable list'}
+            </p>
           </div>
 
+          {/* LIST SOURCE & ITEMS - Only show if not TEXT */}
+          {inputType !== 'TEXT' && (
+            <>
+              <div className="space-y-2">
+                <Label>List Source</Label>
+                <Select value={listSource} onValueChange={(v) => setListSource(v as ListSource)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="custom">Custom List</SelectItem>
+                    <SelectItem value="services">Services (from template)</SelectItem>
+                    <SelectItem value="template_default">Template Default</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* EDITABLE LIST EDITOR - for both custom and template_default */}
+              {showListEditor && (
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+                  {listSource === 'template_default' && (
+                    <div className="p-2 mb-2 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded text-xs text-amber-700 dark:text-amber-300">
+                      💡 This list was created from your template. Feel free to customize it!
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <Label>List Items</Label>
+                    <span className="text-xs text-muted-foreground">{listItems.length}/20</span>
+                  </div>
+                  
+                  {/* Add item input */}
+                  <div className="flex gap-2">
+                    <Input
+                      value={newItem}
+                      onChange={(e) => setNewItem(e.target.value)}
+                      placeholder="Add an option..."
+                      maxLength={24}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addListItem();
+                        }
+                      }}
+                    />
+                    <Button 
+                      type="button" 
+                      size="sm" 
+                      onClick={addListItem}
+                      disabled={!newItem.trim() || listItems.length >= 20}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* List items */}
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {listItems.map((item, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-2 bg-background p-2 rounded border"
+                      >
+                        <span className="text-xs text-muted-foreground w-5">{index + 1}.</span>
+                        <span className="flex-1 truncate text-sm">{item}</span>
+                        <div className="flex gap-1">
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6"
+                            onClick={() => moveItem(index, 'up')}
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6"
+                            onClick={() => moveItem(index, 'down')}
+                            disabled={index === listItems.length - 1}
+                          >
+                            <ChevronDown className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6"
+                            onClick={() => removeListItem(index)}
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {listItems.length === 0 && (
+                    <p className="text-xs text-muted-foreground text-center py-4 border-2 border-dashed rounded">
+                      No items yet. Add options for customers to select.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Retry Message */}
+              <div className="space-y-2">
+                <Label>Retry Message (shown on invalid input)</Label>
+                <Input
+                  value={retryMessage}
+                  onChange={(e) => setRetryMessage(e.target.value)}
+                  placeholder="Please select from the options above 👆"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Validation Type - only for TEXT */}
+          {inputType === 'TEXT' && (
+            <div className="space-y-2">
+              <Label>Validation Type</Label>
+              <Select value={validationType} onValueChange={(v) => setValidationType(v as ValidationType)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(VALIDATION_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Toggle switches */}
           <div className="flex items-center justify-between">
             <Label>Required</Label>
             <Switch checked={isRequired} onCheckedChange={setIsRequired} />
@@ -181,8 +400,11 @@ function StepEditorModal({ step, open, onOpenChange, onSave }: StepEditorModalPr
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!promptText.trim()}>
-            {step ? 'Save' : 'Add Step'}
+          <Button 
+            onClick={handleSave} 
+            disabled={!promptText.trim() || isListTypeWithNoItems}
+          >
+            {step ? 'Save Changes' : 'Add Step'}
           </Button>
         </DialogFooter>
       </DialogContent>

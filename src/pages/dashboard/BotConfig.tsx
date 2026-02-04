@@ -89,11 +89,16 @@ export default function BotConfig() {
         appointmentPrompts: botConfig.appointment_prompts || DEFAULT_CONFIG.appointmentPrompts,
         orderEnabled: botConfig.order_enabled ?? false,
         orderPrompts: botConfig.order_prompts || DEFAULT_CONFIG.orderPrompts,
-        selectedTemplate: DEFAULT_CONFIG.selectedTemplate,
-        aiEnabled: DEFAULT_CONFIG.aiEnabled,
+        selectedTemplate: (botConfig.selected_template as 'appointment' | 'order' | 'class_booking') || DEFAULT_CONFIG.selectedTemplate,
+        aiEnabled: botConfig.ai_enabled ?? DEFAULT_CONFIG.aiEnabled,
         aiApiKey: DEFAULT_CONFIG.aiApiKey,
-        cancellationEnabled: DEFAULT_CONFIG.cancellationEnabled,
+        cancellationEnabled: botConfig.cancellation_enabled ?? DEFAULT_CONFIG.cancellationEnabled,
       });
+      
+      // Sync activeTemplateId from database
+      if (botConfig.selected_template) {
+        setActiveTemplateId(botConfig.selected_template);
+      }
     } else if (business) {
       setConfig(prev => ({
         ...prev,
@@ -432,6 +437,7 @@ export default function BotConfig() {
             bookingSteps={bookingSteps}
             greeting={config.greeting}
             templateName={activeTemplateId ? getTemplateLabel(activeTemplateId) : undefined}
+            templateId={activeTemplateId}
           />
         </div>
       </div>

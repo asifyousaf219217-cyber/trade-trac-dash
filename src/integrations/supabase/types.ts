@@ -105,32 +105,53 @@ export type Database = {
       booking_steps: {
         Row: {
           business_id: string
+          expected_values: Json | null
           id: string
+          input_type: string | null
           is_enabled: boolean | null
           is_required: boolean | null
+          list_items: Json | null
+          list_source: string | null
           prompt_text: string
+          retry_message: string | null
+          skip_button_label: string | null
           step_order: number
           step_type: string
+          validation_regex: string | null
           validation_type: string | null
         }
         Insert: {
           business_id: string
+          expected_values?: Json | null
           id?: string
+          input_type?: string | null
           is_enabled?: boolean | null
           is_required?: boolean | null
+          list_items?: Json | null
+          list_source?: string | null
           prompt_text: string
+          retry_message?: string | null
+          skip_button_label?: string | null
           step_order: number
           step_type: string
+          validation_regex?: string | null
           validation_type?: string | null
         }
         Update: {
           business_id?: string
+          expected_values?: Json | null
           id?: string
+          input_type?: string | null
           is_enabled?: boolean | null
           is_required?: boolean | null
+          list_items?: Json | null
+          list_source?: string | null
           prompt_text?: string
+          retry_message?: string | null
+          skip_button_label?: string | null
           step_order?: number
           step_type?: string
+          validation_regex?: string | null
           validation_type?: string | null
         }
         Relationships: [
@@ -145,6 +166,7 @@ export type Database = {
       }
       bot_configs: {
         Row: {
+          active_template_id: string | null
           ai_api_key_encrypted: string | null
           ai_enabled: boolean | null
           ai_fallback: boolean | null
@@ -163,10 +185,12 @@ export type Database = {
           order_prompts: Json | null
           selected_template: string | null
           static_replies: Json | null
+          template_applied_at: string | null
           unknown_message_help: string | null
           updated_at: string
         }
         Insert: {
+          active_template_id?: string | null
           ai_api_key_encrypted?: string | null
           ai_enabled?: boolean | null
           ai_fallback?: boolean | null
@@ -185,10 +209,12 @@ export type Database = {
           order_prompts?: Json | null
           selected_template?: string | null
           static_replies?: Json | null
+          template_applied_at?: string | null
           unknown_message_help?: string | null
           updated_at?: string
         }
         Update: {
+          active_template_id?: string | null
           ai_api_key_encrypted?: string | null
           ai_enabled?: boolean | null
           ai_fallback?: boolean | null
@@ -207,6 +233,7 @@ export type Database = {
           order_prompts?: Json | null
           selected_template?: string | null
           static_replies?: Json | null
+          template_applied_at?: string | null
           unknown_message_help?: string | null
           updated_at?: string
         }
@@ -436,6 +463,8 @@ export type Database = {
           button_label: string
           button_order: number
           id: string
+          is_list_item: boolean | null
+          list_section_title: string | null
           menu_id: string
           next_menu_id: string | null
         }
@@ -445,6 +474,8 @@ export type Database = {
           button_label: string
           button_order: number
           id?: string
+          is_list_item?: boolean | null
+          list_section_title?: string | null
           menu_id: string
           next_menu_id?: string | null
         }
@@ -454,6 +485,8 @@ export type Database = {
           button_label?: string
           button_order?: number
           id?: string
+          is_list_item?: boolean | null
+          list_section_title?: string | null
           menu_id?: string
           next_menu_id?: string | null
         }
@@ -685,6 +718,7 @@ export type Database = {
         | "rejected"
         | "completed"
         | "cancelled"
+      step_input_type: "BUTTON" | "LIST" | "TEXT"
       verification_status: "not_connected" | "verifying" | "connected"
     }
     CompositeTypes: {
@@ -824,6 +858,7 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
+      step_input_type: ["BUTTON", "LIST", "TEXT"],
       verification_status: ["not_connected", "verifying", "connected"],
     },
   },
