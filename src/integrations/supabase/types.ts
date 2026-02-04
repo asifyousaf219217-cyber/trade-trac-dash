@@ -177,6 +177,7 @@ export type Database = {
           cancellation_enabled: boolean | null
           created_at: string
           fallback_message: string | null
+          faq_welcome_message: string | null
           greeting_message: string | null
           id: string
           is_active: boolean | null
@@ -201,6 +202,7 @@ export type Database = {
           cancellation_enabled?: boolean | null
           created_at?: string
           fallback_message?: string | null
+          faq_welcome_message?: string | null
           greeting_message?: string | null
           id?: string
           is_active?: boolean | null
@@ -225,6 +227,7 @@ export type Database = {
           cancellation_enabled?: boolean | null
           created_at?: string
           fallback_message?: string | null
+          faq_welcome_message?: string | null
           greeting_message?: string | null
           id?: string
           is_active?: boolean | null

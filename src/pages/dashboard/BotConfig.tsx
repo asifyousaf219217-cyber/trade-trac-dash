@@ -31,6 +31,7 @@ const DEFAULT_CONFIG: BotConfigFormData = {
   isActive: false,
   fallbackMessage: "Thanks for your message! We'll get back to you soon.",
   unknownMessageHelp: "Not sure what to do? Try:\n• 'book appointment' - Schedule a service\n• 'cancel appointment' - Cancel existing booking\n• Ask about our services or hours",
+  faqWelcomeMessage: "💬 *What can I help you with?*\n\nTry asking about:\n• Hours / Opening times\n• Prices / Services\n• Location / Address\n\n_Type 'menu' to go back 📱_",
   aiFallback: false,
   appointmentEnabled: false,
   appointmentPrompts: {
@@ -84,6 +85,7 @@ export default function BotConfig() {
         isActive: botConfig.is_active ?? false,
         fallbackMessage: botConfig.fallback_message || DEFAULT_CONFIG.fallbackMessage,
         unknownMessageHelp: botConfig.unknown_message_help || DEFAULT_CONFIG.unknownMessageHelp,
+        faqWelcomeMessage: botConfig.faq_welcome_message || DEFAULT_CONFIG.faqWelcomeMessage,
         aiFallback: botConfig.ai_fallback ?? false,
         appointmentEnabled: botConfig.appointment_enabled ?? false,
         appointmentPrompts: botConfig.appointment_prompts || DEFAULT_CONFIG.appointmentPrompts,
@@ -121,6 +123,7 @@ export default function BotConfig() {
         is_active: config.isActive,
         fallback_message: config.fallbackMessage,
         unknown_message_help: config.unknownMessageHelp,
+        faq_welcome_message: config.faqWelcomeMessage,
         ai_fallback: config.aiFallback,
         appointment_enabled: config.appointmentEnabled,
         appointment_prompts: config.appointmentPrompts,
@@ -315,6 +318,19 @@ export default function BotConfig() {
                 />
                 <p className="text-xs text-muted-foreground">
                   Message shown when bot doesn't understand. Suggest available commands.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="faqWelcomeMessage">FAQ Welcome Message</Label>
+                <Textarea
+                  id="faqWelcomeMessage"
+                  value={config.faqWelcomeMessage}
+                  onChange={(e) => updateConfig({ faqWelcomeMessage: e.target.value })}
+                  placeholder="💬 *What can I help you with?*&#10;&#10;Ask me about:&#10;• Hours / Opening times&#10;• Prices / Services&#10;• Location / Address&#10;&#10;_Type 'menu' to go back 📱_"
+                  rows={6}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Shown when customers tap the FAQ button. Include examples of what they can ask!
                 </p>
               </div>
               <div className="flex items-center justify-between pt-2">

@@ -288,6 +288,8 @@ export function useApplyTemplateDefaults() {
           order_enabled: template.order_enabled,
           // CRITICAL: Include static_replies (FAQs) from template
           static_replies: template.static_replies,
+          // NEW: FAQ welcome message for when user taps FAQ button
+          faq_welcome_message: template.faq_welcome_message,
           selected_template: template.id,
           // NEW: Template tracking fields
           active_template_id: template.id,
