@@ -393,9 +393,7 @@ export default function Index() {
               <span className="text-xl font-bold text-foreground">Whatsbott</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-              <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+             <a href="mailto:support@whatsbott.com" className="hover:text-foreground transition-colors">Contact</a>
             </div>
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} Whatsbott. All rights reserved.

@@ -16,7 +16,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useBookingSteps, useCreateBookingStep, useUpdateBookingStep, useDeleteBookingStep, useReorderBookingSteps } from '@/hooks/useBookingSteps';
 import { toast } from '@/hooks/use-toast';
 import type { BookingStep, StepType, ValidationType, ListSource } from '@/types/bot-config';
-import { STEP_TYPE_LABELS, VALIDATION_TYPE_LABELS, LIST_SOURCE_LABELS } from '@/types/bot-config';
+ import { STEP_TYPE_LABELS, STEP_TYPE_HINTS, VALIDATION_TYPE_LABELS, LIST_SOURCE_LABELS } from '@/types/bot-config';
 
 interface SortableStepItemProps {
   step: BookingStep;
@@ -200,7 +200,7 @@ function StepEditorModal({ step, open, onOpenChange, onSave }: StepEditorModalPr
         <div className="space-y-4 py-4">
           {/* Step Type */}
           <div className="space-y-2">
-            <Label>Step Type</Label>
+           <Label>Question Type</Label>
             <Select value={stepType} onValueChange={(v) => setStepType(v as StepType)}>
               <SelectTrigger>
                 <SelectValue />
@@ -213,6 +213,9 @@ function StepEditorModal({ step, open, onOpenChange, onSave }: StepEditorModalPr
                 ))}
               </SelectContent>
             </Select>
+           <p className="text-xs text-muted-foreground">
+             {STEP_TYPE_HINTS[stepType] || 'Select how answers should be validated'}
+           </p>
           </div>
 
           {/* Prompt Text */}

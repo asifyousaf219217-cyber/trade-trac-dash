@@ -1,71 +1,122 @@
-import { MessageSquare, ShoppingCart, Calendar, Smartphone, Bot, Sparkles } from "lucide-react";
+ import { MessageSquare, ShoppingCart, Calendar, Smartphone, Bot, Sparkles, Loader2 } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+ import { useAnalytics } from "@/hooks/useAnalytics";
+ import { useBotConfig } from "@/hooks/useBotConfig";
+ import { useBusiness } from "@/hooks/useBusiness";
+ import { useWhatsAppNumber } from "@/hooks/useWhatsApp";
+ import { useAISettings } from "@/hooks/useAISettings";
 
 export default function Dashboard() {
+   const { data: analytics, isLoading: analyticsLoading } = useAnalytics();
+   const { data: botConfig, isLoading: botConfigLoading } = useBotConfig();
+   const { data: business, isLoading: businessLoading } = useBusiness();
+   const { data: whatsappNumber, isLoading: whatsappLoading } = useWhatsAppNumber();
+   const { data: aiSettings } = useAISettings();
+ 
+   // Calculate today's stats from analytics (last day in array)
+   const todayMessages = analytics?.messagesData?.[analytics.messagesData.length - 1]?.messages || 0;
+   const todayOrders = analytics?.ordersData?.[analytics.ordersData.length - 1]?.orders || 0;
+   const todayAppointments = analytics?.appointmentsData?.[analytics.appointmentsData.length - 1]?.appointments || 0;
+ 
+   // Reactive status indicators
+   const whatsappConnected = whatsappNumber?.verification_status === 'connected';
+   const botActive = botConfig?.is_active === true;
+   const aiEnabled = aiSettings?.ai_enabled === true;
+ 
+   const isLoading = analyticsLoading || botConfigLoading || businessLoading || whatsappLoading;
+ 
   return (
     <div className="animate-fade-in">
       <div className="page-header">
         <h1 className="page-title">Dashboard</h1>
-        <p className="page-description">Welcome back! Here's what's happening today.</p>
+         <p className="page-description">
+           {business ? `Welcome back, ${business.name}!` : "Welcome back!"} Here's what's happening today.
+         </p>
       </div>
 
       {/* Connection Status Cards */}
       <div className="mb-8 grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">WhatsApp Status</CardTitle>
+             <CardTitle className="text-sm font-medium">WhatsApp</CardTitle>
             <Smartphone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <StatusBadge variant="warning">Not Connected</StatusBadge>
+               {whatsappLoading ? (
+                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+               ) : (
+                 <StatusBadge variant={whatsappConnected ? "active" : "warning"}>
+                   {whatsappConnected ? "Connected" : "Not Connected"}
+                 </StatusBadge>
+               )}
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Connect your WhatsApp Business number
+               {whatsappConnected
+                 ? `Connected: ${whatsappNumber?.display_phone_number || 'WhatsApp Business'}`
+                 : "Connect your WhatsApp Business number"}
             </p>
-            <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link to="/dashboard/whatsapp">Connect Now</Link>
-            </Button>
+             {!whatsappConnected && (
+               <Button asChild variant="outline" size="sm" className="mt-3">
+                 <Link to="/dashboard/whatsapp">Connect Now</Link>
+               </Button>
+             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Bot Status</CardTitle>
+             <CardTitle className="text-sm font-medium">Chatbot</CardTitle>
             <Bot className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <StatusBadge variant="inactive">Inactive</StatusBadge>
+               {botConfigLoading ? (
+                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+               ) : (
+                 <StatusBadge variant={botActive ? "active" : "inactive"}>
+                   {botActive ? "Active" : "Not Active"}
+                 </StatusBadge>
+               )}
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Select and configure your bot
+               {botActive
+                 ? "Your chatbot is live and responding"
+                 : "Choose a template to get started"}
             </p>
-            <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link to="/dashboard/marketplace">Choose Bot</Link>
-            </Button>
+             {!botActive && (
+               <Button asChild variant="outline" size="sm" className="mt-3">
+                 <Link to="/dashboard/marketplace">Choose Template</Link>
+               </Button>
+             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">AI Mode</CardTitle>
+             <CardTitle className="text-sm font-medium">Smart Replies</CardTitle>
             <Sparkles className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <StatusBadge variant="default">Static Mode</StatusBadge>
+               <StatusBadge variant={aiEnabled ? "active" : "default"}>
+                 {aiEnabled ? "AI Enabled" : "Manual Mode"}
+               </StatusBadge>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Add Gemini API key for AI responses
+               {aiEnabled
+                 ? "AI is handling complex questions"
+                 : "Enable AI for smarter, personalized replies"}
             </p>
-            <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link to="/dashboard/ai-settings">Enable AI</Link>
-            </Button>
+             {!aiEnabled && (
+               <Button asChild variant="outline" size="sm" className="mt-3">
+                 <Link to="/dashboard/ai-settings">Enable Smart Replies</Link>
+               </Button>
+             )}
           </CardContent>
         </Card>
       </div>
@@ -76,21 +127,21 @@ export default function Dashboard() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             title="Messages"
-            value="0"
+             value={analyticsLoading ? "..." : String(todayMessages)}
             description="Total messages today"
             icon={MessageSquare}
             trend={{ value: 0, isPositive: true }}
           />
           <StatCard
             title="Orders"
-            value="0"
+             value={analyticsLoading ? "..." : String(todayOrders)}
             description="Orders received"
             icon={ShoppingCart}
             trend={{ value: 0, isPositive: true }}
           />
           <StatCard
             title="Appointments"
-            value="0"
+             value={analyticsLoading ? "..." : String(todayAppointments)}
             description="Appointments booked"
             icon={Calendar}
             trend={{ value: 0, isPositive: true }}

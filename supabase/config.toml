@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.send-confirmation]
 verify_jwt = false
+
+[functions.preview-bot]
+verify_jwt = false

@@ -695,6 +695,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_bot_data_fast: {
+        Args: {
+          p_from_number: string
+          p_phone_number_id: string
+          p_whatsapp_message_id: string
+        }
+        Returns: Json
+      }
       get_conversations_with_preview: {
         Args: { p_business_id: string; p_limit?: number }
         Returns: {
@@ -708,7 +716,9 @@ export type Database = {
           unread_count: number
         }[]
       }
-      get_user_business_id: { Args: { _user_id: string }; Returns: string }
+      get_user_business_id:
+        | { Args: never; Returns: string }
+        | { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       appointment_status: "pending" | "confirmed" | "cancelled"

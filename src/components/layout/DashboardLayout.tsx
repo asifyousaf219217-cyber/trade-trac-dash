@@ -1,9 +1,27 @@
-import { Outlet } from "react-router-dom";
+ import { Outlet } from "react-router-dom";
+ import { useState, useEffect } from "react";
 import { DashboardSidebar } from "./DashboardSidebar";
+ import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+ import { useBusiness } from "@/hooks/useBusiness";
 
 export function DashboardLayout() {
+   const { data: business, isLoading } = useBusiness();
+   const [showOnboarding, setShowOnboarding] = useState(false);
+ 
+   // Show onboarding if business name is default or empty
+   useEffect(() => {
+     if (!isLoading && business) {
+       const needsOnboarding =
+         !business.name ||
+         business.name === "My Business" ||
+         business.name.trim() === "";
+       setShowOnboarding(needsOnboarding);
+     }
+   }, [business, isLoading]);
+ 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+     <>
+       <div className="relative min-h-screen overflow-hidden">
       {/* Gradient Background */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-background" />
@@ -20,12 +38,18 @@ export function DashboardLayout() {
         />
       </div>
       
-      <DashboardSidebar />
-      <main className="lg:pl-64">
-        <div className="min-h-screen p-4 pt-20 lg:p-8 lg:pt-8">
-          <Outlet />
+         <DashboardSidebar />
+         <main className="lg:pl-64">
+           <div className="min-h-screen p-4 pt-20 lg:p-8 lg:pt-8">
+             <Outlet />
+           </div>
+         </main>
         </div>
-      </main>
-    </div>
+ 
+       <OnboardingModal
+         open={showOnboarding}
+         onComplete={() => setShowOnboarding(false)}
+       />
+     </>
   );
 }

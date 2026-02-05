@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 import { BOT_TEMPLATES, type MarketplaceBot } from "@/data/bot-templates";
-import { useUpdateBotConfig, convertToStaticReplies } from "@/hooks/useBotConfig";
+ import { useBotConfig, useUpdateBotConfig, convertToStaticReplies } from "@/hooks/useBotConfig";
 import { useBusiness } from "@/hooks/useBusiness";
 import { generateFAQId } from "@/types/bot-config";
 import { toast } from "@/hooks/use-toast";
@@ -16,7 +16,11 @@ export default function BotMarketplace() {
   const [selectedBot, setSelectedBot] = useState<string | null>(null);
   const [previewBot, setPreviewBot] = useState<MarketplaceBot | null>(null);
   const { data: business } = useBusiness();
+   const { data: botConfig } = useBotConfig();
   const updateBotConfig = useUpdateBotConfig();
+ 
+   // Get currently active template from bot_config
+   const currentTemplateId = botConfig?.active_template_id || null;
 
   const handleSelectBot = async (bot: MarketplaceBot) => {
     if (!business) {
@@ -79,7 +83,7 @@ export default function BotMarketplace() {
             <Store className="h-5 w-5 text-accent-foreground" />
           </div>
           <div>
-            <h1 className="page-title">Bot Marketplace</h1>
+             <h1 className="page-title">Template Gallery</h1>
             <p className="page-description">Choose a pre-built bot template for your business</p>
           </div>
         </div>
@@ -89,14 +93,17 @@ export default function BotMarketplace() {
         <div className="mb-6 flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3">
           <Check className="h-5 w-5 text-success" />
           <span className="text-sm font-medium text-success">
-            {BOT_TEMPLATES.find((b) => b.id === selectedBot)?.name} applied! Redirecting to Bot Config...
+             {BOT_TEMPLATES.find((b) => b.id === selectedBot)?.name} applied! Redirecting to Chatbot Setup...
           </span>
         </div>
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {BOT_TEMPLATES.map((bot) => {
-          const isSelected = selectedBot === bot.id;
+           // Check if this is the currently active template OR just selected
+           const isCurrentlyActive = currentTemplateId === bot.id;
+           const isJustSelected = selectedBot === bot.id;
+           const isSelected = isCurrentlyActive || isJustSelected;
 
           return (
             <Card
@@ -121,7 +128,7 @@ export default function BotMarketplace() {
                       <CardDescription className="mt-1 line-clamp-2">{bot.description}</CardDescription>
                     </div>
                   </div>
-                  {isSelected && <StatusBadge variant="active">Active</StatusBadge>}
+                   {isCurrentlyActive && <StatusBadge variant="active">Active</StatusBadge>}
                 </div>
               </CardHeader>
               <CardContent>
@@ -152,17 +159,17 @@ export default function BotMarketplace() {
 
                   <Button
                     className="w-full"
-                    variant={isSelected ? "outline" : "default"}
+                     variant={isCurrentlyActive ? "outline" : "default"}
                     disabled={updateBotConfig.isPending}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleSelectBot(bot);
                     }}
                   >
-                    {isSelected ? (
+                     {isCurrentlyActive ? (
                       <>
                         <Check className="mr-2 h-4 w-4" />
-                        Applied
+                         Currently Active
                       </>
                     ) : (
                       "Use This Template"

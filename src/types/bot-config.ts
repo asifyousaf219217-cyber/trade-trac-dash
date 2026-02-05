@@ -95,7 +95,13 @@ export type StepType =
   | 'NAME'
   | 'PHONE'
   | 'EMAIL'
-  | 'CUSTOM';
+   | 'CUSTOM'
+   | 'CAR'
+   | 'YEAR'
+   | 'ADDRESS'
+   | 'NUMBER'
+   | 'LICENSE'
+   | 'ID';
 
 export type ValidationType =
   | 'text'
@@ -199,8 +205,32 @@ export const STEP_TYPE_LABELS: Record<StepType, string> = {
   'PHONE': 'Phone Number',
   'EMAIL': 'Email Address',
   'CUSTOM': 'Custom Field',
+   'CAR': 'Car / Vehicle',
+   'YEAR': 'Year',
+   'ADDRESS': 'Address',
+   'NUMBER': 'Number',
+   'LICENSE': 'License Plate',
+   'ID': 'ID / Reference',
 };
 
+ /**
+  * Helper hints for each step type
+  */
+ export const STEP_TYPE_HINTS: Record<StepType, string> = {
+   'SERVICE': 'User selects from your services',
+   'DATETIME': 'Date and time like "Tomorrow 3pm"',
+   'NAME': 'Letters only, at least 2 characters',
+   'PHONE': 'Phone number with 7+ digits',
+   'EMAIL': 'Valid email address',
+   'CUSTOM': 'Accept any text',
+   'CAR': 'Car model like "Toyota Camry 2020"',
+   'YEAR': '4-digit year like "2024"',
+   'ADDRESS': 'Street address with number',
+   'NUMBER': 'Numbers only',
+   'LICENSE': 'License plate 4-10 characters',
+   'ID': 'Any alphanumeric ID',
+ };
+ 
 /**
  * Validation type labels for UI display
  */

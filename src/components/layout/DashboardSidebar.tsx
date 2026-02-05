@@ -15,14 +15,16 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+ import { useBusiness } from "@/hooks/useBusiness";
 
+ // User-friendly navigation labels
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "WhatsApp Connection", href: "/dashboard/whatsapp", icon: Smartphone },
-  { name: "Bot Marketplace", href: "/dashboard/marketplace", icon: Store },
-  { name: "Bot Config", href: "/dashboard/bot-config", icon: Bot },
-  { name: "AI Settings", href: "/dashboard/ai-settings", icon: Sparkles },
-  { name: "Live Chat", href: "/dashboard/chat", icon: MessageSquare },
+   { name: "WhatsApp", href: "/dashboard/whatsapp", icon: Smartphone },
+   { name: "Templates", href: "/dashboard/marketplace", icon: Store },
+   { name: "Chatbot Setup", href: "/dashboard/bot-config", icon: Bot },
+   { name: "Smart Replies", href: "/dashboard/ai-settings", icon: Sparkles },
+   { name: "Live Chat", href: "/dashboard/live-chat", icon: MessageSquare },
   { name: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
   { name: "Appointments", href: "/dashboard/appointments", icon: Calendar },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
@@ -32,6 +34,18 @@ const navigation = [
 export function DashboardSidebar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   const { data: business } = useBusiness();
+ 
+   // Get initials for avatar
+   const getInitials = () => {
+     const name = business?.name || "";
+     if (!name) return "WB";
+     const words = name.split(" ");
+     if (words.length >= 2) {
+       return (words[0][0] + words[1][0]).toUpperCase();
+     }
+     return name.substring(0, 2).toUpperCase();
+   };
 
   return (
     <>
@@ -91,11 +105,11 @@ export function DashboardSidebar() {
         <div className="border-t border-sidebar-border p-4">
           <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-primary text-sm font-medium text-sidebar-primary-foreground">
-              JD
+             {getInitials()}
             </div>
             <div className="flex-1 overflow-hidden">
               <p className="truncate text-sm font-medium text-sidebar-foreground">
-                John's Restaurant
+               {business?.name || "Your Business"}
               </p>
               <p className="truncate text-xs text-sidebar-muted">Free Plan</p>
             </div>

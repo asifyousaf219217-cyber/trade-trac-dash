@@ -1,5 +1,6 @@
-import { useState } from "react";
+ import { useState, useEffect } from "react";
 import { Settings as SettingsIcon, User, Globe, LogOut, Save, Building } from "lucide-react";
+ import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,9 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
+ import { useBusiness, useUpdateBusiness } from "@/hooks/useBusiness";
+ import { useAuth } from "@/contexts/AuthContext";
+ import { toast } from "@/hooks/use-toast";
 
 const timezones = [
   { value: "UTC", label: "UTC (Coordinated Universal Time)" },
@@ -30,30 +34,78 @@ const timezones = [
 
 export default function Settings() {
   const navigate = useNavigate();
+   const { data: business, isLoading } = useBusiness();
+   const { user, signOut } = useAuth();
+   const updateBusiness = useUpdateBusiness();
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState({
-    businessName: "John's Restaurant",
-    email: "john@restaurant.com",
-    phone: "+1 234 567 8900",
-    address: "123 Main Street, New York, NY 10001",
-    timezone: "America/New_York",
+     businessName: "",
+     email: "",
+     phone: "",
+     address: "",
+     timezone: "UTC",
   });
 
-  const handleSave = () => {
+   // Populate form when data loads
+   useEffect(() => {
+     if (business) {
+       setProfile({
+         businessName: business.name || "",
+         email: user?.email || "",
+         phone: "",
+         address: "",
+         timezone: business.timezone || "UTC",
+       });
+     }
+   }, [business, user]);
+ 
+   const handleSave = async () => {
+     if (!business) return;
+ 
     setIsSaving(true);
-    setTimeout(() => {
+     try {
+       await updateBusiness.mutateAsync({
+         name: profile.businessName,
+         timezone: profile.timezone,
+       });
+       toast({
+         title: "Settings saved",
+         description: "Your profile has been updated.",
+       });
+     } catch (error) {
+       toast({
+         title: "Error",
+         description: "Failed to save settings.",
+         variant: "destructive",
+       });
+     } finally {
       setIsSaving(false);
-    }, 1000);
+     }
   };
 
-  const handleLogout = () => {
-    navigate("/login");
+   const handleLogout = async () => {
+     await signOut();
+     navigate("/");
   };
 
   const updateProfile = (key: keyof typeof profile, value: string) => {
     setProfile((prev) => ({ ...prev, [key]: value }));
   };
 
+   // Get initials for avatar
+   const getInitials = () => {
+     const name = profile.businessName || user?.email || "";
+     return name.substring(0, 2).toUpperCase();
+   };
+ 
+   if (isLoading) {
+     return (
+       <div className="flex h-64 items-center justify-center">
+         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+       </div>
+     );
+   }
+ 
   return (
     <div className="animate-fade-in">
       <div className="page-header">
@@ -171,11 +223,11 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-medium text-primary-foreground">
-                  JR
+                 {getInitials()}
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">{profile.businessName}</p>
-                  <p className="text-sm text-muted-foreground">{profile.email}</p>
+                 <p className="font-medium text-foreground">{profile.businessName || "Your Business"}</p>
+                 <p className="text-sm text-muted-foreground">{profile.email || user?.email}</p>
                 </div>
               </div>
 
@@ -189,9 +241,6 @@ export default function Settings() {
                     Limited to 100 messages/month
                   </p>
                 </div>
-                <Button variant="outline" className="w-full">
-                  Upgrade Plan
-                </Button>
               </div>
 
               <Separator />
@@ -212,10 +261,11 @@ export default function Settings() {
               <CardTitle>Need Help?</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full">
-                View Documentation
-              </Button>
-              <Button variant="outline" className="w-full">
+             <Button 
+               variant="outline" 
+               className="w-full"
+               onClick={() => window.open("mailto:support@whatsbott.com", "_blank")}
+             >
                 Contact Support
               </Button>
             </CardContent>

@@ -17,9 +17,9 @@ import { FAQManager } from "@/components/bot-config/FAQManager";
 import { InteractiveMenuBuilder } from "@/components/bot-config/InteractiveMenuBuilder";
 import { BookingStepBuilder } from "@/components/bot-config/BookingStepBuilder";
 import { TemplateConfigPanel } from "@/components/bot-config/TemplateConfigPanel";
-import { WhatsAppPreview } from "@/components/bot-config/WhatsAppPreview";
+import { WhatsAppPreviewRPC } from "@/components/bot-config/WhatsAppPreviewRPC";
 import { getTemplateById, getTemplateLabel } from "@/data/template-definitions";
-import type { FAQ, BotConfigFormData, AppointmentPrompts, OrderPrompts } from "@/types/bot-config";
+import type { FAQ, BotConfigFormData } from "@/types/bot-config";
 
 const DEFAULT_CONFIG: BotConfigFormData = {
   greeting: "Welcome to our business! How can I help you today?",
@@ -448,12 +448,9 @@ export default function BotConfig() {
 
         {/* Live Preview */}
         <div className="lg:col-span-1">
-          <WhatsAppPreview
-            menus={menus}
-            bookingSteps={bookingSteps}
-            greeting={config.greeting}
+          <WhatsAppPreviewRPC
+            businessId={business?.id || null}
             templateName={activeTemplateId ? getTemplateLabel(activeTemplateId) : undefined}
-            templateId={activeTemplateId}
           />
         </div>
       </div>

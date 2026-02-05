@@ -45,7 +45,7 @@ const App = () => (
               <Route path="marketplace" element={<BotMarketplace />} />
               <Route path="bot-config" element={<BotConfig />} />
               <Route path="ai-settings" element={<AISettings />} />
-              <Route path="chat" element={<LiveChat />} />
+              <Route path="live-chat" element={<LiveChat />} />
               <Route path="orders" element={<Orders />} />
               <Route path="appointments" element={<Appointments />} />
               <Route path="analytics" element={<Analytics />} />
