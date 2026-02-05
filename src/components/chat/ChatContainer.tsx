@@ -151,6 +151,7 @@ export function ChatContainer({
           onOpenWhatsApp={handleOpenWhatsApp}
           onDeleteAllMessages={() => setDeleteAllDialogOpen(true)}
           isTogglingBot={toggleBotStatus.isPending}
+          onConversationUpdate={onConversationUpdate}
         />
 
         <CardContent className="flex-1 overflow-y-auto p-0">

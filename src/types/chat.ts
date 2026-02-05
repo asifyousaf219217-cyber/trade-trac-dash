@@ -35,6 +35,7 @@ export interface ChatMessageData {
 export interface ConversationData {
   id: string;
   customerPhone: string;
+  customerName?: string;
   lastMessage: string;
   lastMessageTime: string;
   lastMessageDirection: 'inbound' | 'outbound';

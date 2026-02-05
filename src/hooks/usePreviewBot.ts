@@ -21,6 +21,7 @@ export function usePreviewBot(businessId: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const isFirstMessageRef = useRef<boolean>(true);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -50,6 +51,10 @@ export function usePreviewBot(businessId: string | null) {
     setIsLoading(true);
     setError(null);
 
+    // Track if this is the first message (used to skip duplicate greeting)
+    const isFirstMsg = isFirstMessageRef.current;
+    isFirstMessageRef.current = false;
+
     try {
       // Call Edge Function (same backend as production)
       const { data, error: fnError } = await supabase.functions.invoke('preview-bot', {
@@ -58,7 +63,8 @@ export function usePreviewBot(businessId: string | null) {
           message_text: text,
           button_payload: buttonPayload,
           current_state: previewState.state,
-          current_context: previewState.context
+          current_context: previewState.context,
+          is_first_message: isFirstMsg
         }
       });
 
@@ -104,6 +110,7 @@ export function usePreviewBot(businessId: string | null) {
     setMessages([]);
     setPreviewState({ state: 'NEW', context: {} });
     setError(null);
+    isFirstMessageRef.current = true;
   }, []);
 
   const startPreview = useCallback(async () => {

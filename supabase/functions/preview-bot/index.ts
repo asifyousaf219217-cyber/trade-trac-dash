@@ -11,6 +11,7 @@ interface PreviewRequest {
   button_payload?: string;
   current_state?: string;
   current_context?: Record<string, unknown>;
+  is_first_message?: boolean;
 }
 
 interface Button {
@@ -319,7 +320,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { business_id, message_text, button_payload, current_state, current_context } = 
+    const { business_id, message_text, button_payload, current_state, current_context, is_first_message } = 
       await req.json() as PreviewRequest;
 
     const supabase = createClient(
@@ -348,10 +349,14 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
+    // For the first message in preview, treat it as NEW state regardless of what's in database
+    // This ensures the greeting shows only once
+    const effectiveState = is_first_message ? 'NEW' : (current_state || 'NEW');
+
     // Override state/context for preview simulation
     const previewData: FullData = {
       ...(rpcData as Record<string, unknown>),
-      conversation_state: current_state || 'NEW',
+      conversation_state: effectiveState,
       context: current_context || {},
       message_text: message_text,
       button_payload: button_payload

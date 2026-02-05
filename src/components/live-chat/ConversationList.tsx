@@ -80,12 +80,17 @@ export function ConversationList({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
                   <p className="font-medium text-foreground">
-                    {formatPhoneDisplay(conv.customerPhone)}
+                    {conv.customerName || formatPhoneDisplay(conv.customerPhone)}
                   </p>
                   <span className="text-xs text-muted-foreground">
                     {formatTimeAgo(conv.lastMessageTime)}
                   </span>
                 </div>
+                {conv.customerName && (
+                  <p className="text-xs text-muted-foreground">
+                    {formatPhoneDisplay(conv.customerPhone)}
+                  </p>
+                )}
                 <p className="truncate text-sm text-muted-foreground">
                   {conv.lastMessage}
                 </p>

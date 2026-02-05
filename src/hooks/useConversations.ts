@@ -7,6 +7,7 @@ import type { ConversationData, ConversationState } from '@/types/chat';
 interface ConversationRow {
   id: string;
   customer_phone: string;
+  customer_name: string | null;
   status: string | null;
   bot_enabled: boolean | null;
   last_message_at: string | null;
@@ -23,6 +24,7 @@ function mapConversation(row: ConversationRow): ConversationData {
   return {
     id: row.id,
     customerPhone: row.customer_phone,
+    customerName: row.customer_name || undefined,
     lastMessage: lastMessage?.message_text || '',
     lastMessageTime: lastMessage?.created_at || row.last_message_at || '',
     lastMessageDirection: (lastMessage?.direction as 'inbound' | 'outbound') || 'inbound',
@@ -47,11 +49,13 @@ export function useConversations() {
       if (!business) return [];
 
       // Query conversations with their latest message and context
+      // Exclude preview/simulator conversations - these are ephemeral test conversations
       const { data, error } = await supabase
         .from('conversations')
         .select(`
           id,
           customer_phone,
+          customer_name,
           status,
           bot_enabled,
           last_message_at,
@@ -63,6 +67,8 @@ export function useConversations() {
           )
         `)
         .eq('business_id', business.id)
+        .not('customer_phone', 'ilike', '%preview%')
+        .not('customer_phone', 'ilike', '%simulator%')
         .order('last_message_at', { ascending: false, nullsFirst: false })
         .limit(100);
 
