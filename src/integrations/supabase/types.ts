@@ -378,6 +378,7 @@ export type Database = {
           business_id: string
           context: Json | null
           created_at: string | null
+          customer_name: string | null
           customer_phone: string
           id: string
           last_bot_message_id: string | null
@@ -391,6 +392,7 @@ export type Database = {
           business_id: string
           context?: Json | null
           created_at?: string | null
+          customer_name?: string | null
           customer_phone: string
           id?: string
           last_bot_message_id?: string | null
@@ -404,6 +406,7 @@ export type Database = {
           business_id?: string
           context?: Json | null
           created_at?: string | null
+          customer_name?: string | null
           customer_phone?: string
           id?: string
           last_bot_message_id?: string | null
