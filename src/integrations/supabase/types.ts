@@ -168,6 +168,7 @@ export type Database = {
         Row: {
           active_template_id: string | null
           ai_api_key_encrypted: string | null
+          ai_business_context: string | null
           ai_enabled: boolean | null
           ai_fallback: boolean | null
           ai_features: Json | null
@@ -194,6 +195,7 @@ export type Database = {
         Insert: {
           active_template_id?: string | null
           ai_api_key_encrypted?: string | null
+          ai_business_context?: string | null
           ai_enabled?: boolean | null
           ai_fallback?: boolean | null
           ai_features?: Json | null
@@ -220,6 +222,7 @@ export type Database = {
         Update: {
           active_template_id?: string | null
           ai_api_key_encrypted?: string | null
+          ai_business_context?: string | null
           ai_enabled?: boolean | null
           ai_fallback?: boolean | null
           ai_features?: Json | null
@@ -703,9 +706,9 @@ export type Database = {
     Functions: {
       get_bot_data_fast: {
         Args: {
-          p_from_number: string
+          p_from_number?: string
           p_phone_number_id: string
-          p_whatsapp_message_id: string
+          p_whatsapp_message_id?: string
         }
         Returns: Json
       }
