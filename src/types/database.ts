@@ -131,21 +131,15 @@ export interface AppointmentUpdate {
   notes?: string;
 }
 
-// AI Settings types
-export interface AISettings {
-  id: string;
-  business_id: string;
-  ai_enabled: boolean;
-  gemini_api_key_encrypted: string | null;
-  ai_model: string;
-  system_prompt: string | null;
-  created_at: string;
-  updated_at: string;
+// AI Settings types (stored in bot_configs table, not separate table)
+export interface AIFeatures {
+  intent_detection: boolean;
+  datetime_assist: boolean;
+  faq_answers: boolean;
 }
 
 export interface AISettingsUpdate {
   ai_enabled?: boolean;
-  gemini_api_key_encrypted?: string | null;
-  ai_model?: string;
-  system_prompt?: string | null;
+  ai_features?: AIFeatures;
+  ai_api_key_encrypted?: string;
 }

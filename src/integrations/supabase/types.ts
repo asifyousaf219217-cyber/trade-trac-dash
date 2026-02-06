@@ -170,6 +170,7 @@ export type Database = {
           ai_api_key_encrypted: string | null
           ai_enabled: boolean | null
           ai_fallback: boolean | null
+          ai_features: Json | null
           appointment_enabled: boolean | null
           appointment_prompts: Json | null
           bot_id: string | null
@@ -195,6 +196,7 @@ export type Database = {
           ai_api_key_encrypted?: string | null
           ai_enabled?: boolean | null
           ai_fallback?: boolean | null
+          ai_features?: Json | null
           appointment_enabled?: boolean | null
           appointment_prompts?: Json | null
           bot_id?: string | null
@@ -220,6 +222,7 @@ export type Database = {
           ai_api_key_encrypted?: string | null
           ai_enabled?: boolean | null
           ai_fallback?: boolean | null
+          ai_features?: Json | null
           appointment_enabled?: boolean | null
           appointment_prompts?: Json | null
           bot_id?: string | null

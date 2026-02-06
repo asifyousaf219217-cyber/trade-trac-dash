@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.preview-bot]
 verify_jwt = false
+
+[functions.validate-gemini-key]
+verify_jwt = false
+
+[functions.ai-assist]
+verify_jwt = false
