@@ -142,11 +142,21 @@ export default function AISettings() {
       queryClient.invalidateQueries({ queryKey: ["ai-config"] });
       queryClient.invalidateQueries({ queryKey: ["has-gemini-key"] });
       queryClient.invalidateQueries({ queryKey: ["bot-config"] });
+      
+      // Track what was saved for the toast
+      const savedItems: string[] = [];
+      if (isAIEnabled !== aiConfig?.ai_enabled) savedItems.push("AI status");
+      if (JSON.stringify(aiFeatures) !== JSON.stringify(aiConfig?.ai_features)) savedItems.push("AI features");
+      if (keyChanged && keyStatus === "valid" && !apiKey.includes("•")) savedItems.push("API key");
+      if (businessContextChanged) savedItems.push("business context");
+      
       setKeyChanged(false);
       setBusinessContextChanged(false);
       toast({
         title: "Settings saved",
-        description: "Your AI settings have been updated.",
+        description: savedItems.length > 0 
+          ? `Updated: ${savedItems.join(", ")}`
+          : "Your AI settings have been updated.",
       });
     },
     onError: (error: Error) => {
@@ -263,10 +273,16 @@ export default function AISettings() {
     setBusinessContextChanged(true);
   };
 
+  // API key can only be saved if it was changed, tested and valid, and not the masked placeholder
+  const keyReadyToSave = keyChanged && keyStatus === "valid" && !apiKey.includes("•");
+  
+  // Show warning if key was changed but not validated
+  const showKeyWarning = keyChanged && !apiKey.includes("•") && keyStatus !== "valid" && keyStatus !== "validating";
+
   const canSave = isAIEnabled !== aiConfig?.ai_enabled ||
     JSON.stringify(aiFeatures) !== JSON.stringify(aiConfig?.ai_features) ||
     businessContextChanged ||
-    (keyChanged && keyStatus === "valid");
+    keyReadyToSave;
 
   if (businessLoading || configLoading) {
     return (
@@ -277,7 +293,7 @@ export default function AISettings() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in pb-20">
       <div className="page-header">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-accent p-2">
@@ -376,6 +392,15 @@ export default function AISettings() {
                   "Test API Key"
                 )}
               </Button>
+
+              {showKeyWarning && (
+                <Alert className="border-yellow-500/50 bg-yellow-500/10">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-700 dark:text-yellow-400">
+                    Please test your API key before saving. Keys are only saved after successful validation.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               <div className="rounded-lg bg-accent/50 p-4">
                 <div className="flex gap-2">
@@ -528,23 +553,7 @@ Example: We are a barber shop in Dubai. Services include haircuts, beard trim, a
             </CardContent>
           </Card>
 
-          <Button
-            onClick={() => saveMutation.mutate()}
-            disabled={!canSave || saveMutation.isPending}
-            className="w-full"
-          >
-            {saveMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Settings
-              </>
-            )}
-          </Button>
+          {/* Placeholder for sticky save button spacing */}
         </div>
 
         {/* Info Cards */}
@@ -640,6 +649,35 @@ Example: We are a barber shop in Dubai. Services include haircuts, beard trim, a
               </ul>
             </CardContent>
           </Card>
+        </div>
+      </div>
+
+      {/* Sticky Save Button */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border p-4 lg:left-64">
+        <div className="max-w-5xl mx-auto">
+          <Button
+            onClick={() => saveMutation.mutate()}
+            disabled={!canSave || saveMutation.isPending}
+            className="w-full"
+            size="lg"
+          >
+            {saveMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save AI Settings
+              </>
+            )}
+          </Button>
+          {showKeyWarning && (
+            <p className="text-center text-sm text-yellow-600 dark:text-yellow-400 mt-2">
+              ⚠️ API key will not be saved until tested
+            </p>
+          )}
         </div>
       </div>
     </div>
